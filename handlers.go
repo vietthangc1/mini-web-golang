@@ -219,7 +219,6 @@ func UpdateProduct(c *gin.Context) {
 
 func DeleteProduct(c *gin.Context) {
 	id := c.Param("id")
-	var deleteProduct product
 
 	query := `
 	DELETE FROM products 
