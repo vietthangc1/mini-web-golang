@@ -5,9 +5,9 @@ import (
 	"fmt"
 	"log"
 	"math"
-	"math/rand"
 	"net/http"
 	"strconv"
+	"time"
 
 	"github.com/gin-gonic/gin"
 )
@@ -18,7 +18,12 @@ func GetProductByID(c *gin.Context) {
 	var (
 		productQuery product
 	)
-	err := db.QueryRow("SELECT id, sku, name, price, number, description, cate1, cate2, color, size FROM products WHERE id = ?", id).Scan(
+	query := `
+	SELECT id, sku, name, price, number, description, cate1, cate2, color, size
+	FROM products 
+	WHERE id = ?
+	`
+	err := db.QueryRow(query, id).Scan(
 		&productQuery.ID,
 		&productQuery.SKU,
 		&productQuery.Name,
@@ -44,13 +49,38 @@ func GetProducts(c *gin.Context) {
 		productsQuery []product
 	)
 
+	filterProducts := c.Request.URL.Query()
+
+	cate1 := filterProducts.Get("cate1")
+	if cate1 == "" {
+		cate1 = "%%"
+	}
+	cate2 := filterProducts.Get("cate2")
+	if cate2 == "" {
+		cate2 = "%%"
+	}
+
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
 
-	rows, err := db.Query("SELECT id, sku, name, price, number, description, cate1, cate2, color, size FROM products")
+	query := `
+	SELECT id, sku, name, price, number, description, cate1, cate2, color, size
+	FROM products 
+	WHERE 1=1
+	AND cate1 like ?
+	AND cate2 like ?
+	`
+	stmt, err := db.Prepare(query)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
+		log.Fatal(err)
+	}
+	defer stmt.Close()
+
+	rows, err := stmt.Query(cate1, cate2)
+	if err != nil {
+		log.Fatal(err)
 	}
 	defer rows.Close()
+
 	for rows.Next() {
 		err := rows.Scan(
 			&productQuery.ID,
@@ -75,7 +105,7 @@ func GetProducts(c *gin.Context) {
 	}
 
 	// Pagination
-	filterProducts := c.Request.URL.Query()
+	
 	productPerPage := 2
 	pageNum := 1
 	
@@ -102,8 +132,8 @@ func AddProduct(c *gin.Context) {
 		return
 	}
 
-	id := rand.Intn(100000000)
-	newProduct.ID = strconv.Itoa(id)
+	id := time.Now().UnixMilli()
+	newProduct.ID = strconv.Itoa(int(id))
 
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
 
@@ -111,8 +141,6 @@ func AddProduct(c *gin.Context) {
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	res, err := stmt.Exec(
 		newProduct.ID,
@@ -128,20 +156,14 @@ func AddProduct(c *gin.Context) {
 	)
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	lastId, err := res.LastInsertId()
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
 	c.IndentedJSON(http.StatusCreated, newProduct)
@@ -166,8 +188,6 @@ func UpdateProduct(c *gin.Context) {
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	res, err := stmt.Exec(
 		updateProduct.SKU,
@@ -183,20 +203,14 @@ func UpdateProduct(c *gin.Context) {
 	)
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	lastId, err := res.LastInsertId()
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
 
@@ -216,30 +230,22 @@ func DeleteProduct(c *gin.Context) {
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	res, err := stmt.Exec(
 		id,
 	)
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	lastId, err := res.LastInsertId()
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
 		log.Fatal(err)
-		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err})
-		return
 	}
 	fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
 
-	c.IndentedJSON(http.StatusCreated, deleteProduct)
+	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Deleted!"})
 }
