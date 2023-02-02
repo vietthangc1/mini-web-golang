@@ -5,11 +5,10 @@ import (
 	"fmt"
 	"time"
 
-	"github.com/gin-gonic/gin"
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var db *sql.DB
+var db sql.DB
 
 func main() {
 	db, err := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
@@ -31,12 +30,7 @@ func main() {
 		fmt.Println("Successful database connection")
 	}
 
-	router := gin.Default()
-	router.GET("/products", GetProducts)
-	router.POST("/product", AddProduct)
-	router.PUT("/product/:id", UpdateProduct)
-	router.GET("/product/:id", GetProductByID)
-	router.DELETE("/product/:id", DeleteProduct)
+	router := GenerateRoutes()
 
 	fmt.Println("Running at http://127.0.0.1:8080")
 	router.Run("127.0.0.1:8080")
