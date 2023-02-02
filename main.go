@@ -8,7 +8,7 @@ import (
 	_ "github.com/go-sql-driver/mysql"
 )
 
-var db sql.DB
+var db *sql.DB
 
 func main() {
 	db, err := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
