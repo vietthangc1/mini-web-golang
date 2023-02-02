@@ -19,7 +19,7 @@ func GetProductByID(c *gin.Context) {
 		productQuery product
 	)
 	query := `
-	SELECT id, sku, name, price, number, description, cate1, cate2, color, size
+	SELECT id, sku, name, price, number, description, cate1, cate2, coalesce(cate3, '') as cate3, coalesce(cate4, '') as cate4, propertises
 	FROM products 
 	WHERE id = ?
 	`
@@ -32,8 +32,9 @@ func GetProductByID(c *gin.Context) {
 		&productQuery.Description,
 		&productQuery.Cate1,
 		&productQuery.Cate2,
-		&productQuery.Color,
-		&productQuery.Size,
+		&productQuery.Cate3,
+		&productQuery.Cate4,
+		&productQuery.Propertises,
 	)
 
 	if err != nil {
@@ -59,15 +60,25 @@ func GetProducts(c *gin.Context) {
 	if cate2 == "" {
 		cate2 = "%%"
 	}
+	cate3 := filterProducts.Get("cate3")
+	if cate3 == "" {
+		cate3 = "%%"
+	}
+	cate4 := filterProducts.Get("cate4")
+	if cate4 == "" {
+		cate4 = "%%"
+	}
 
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
 
 	query := `
-	SELECT id, sku, name, price, number, description, cate1, cate2, color, size
+	SELECT id, sku, name, price, number, description, cate1, cate2, coalesce(cate3, '') as cate3, coalesce(cate4, '') as cate4, propertises
 	FROM products 
 	WHERE 1=1
 	AND cate1 like ?
 	AND cate2 like ?
+	AND cate3 like ?
+	AND cate4 like ?
 	`
 	stmt, err := db.Prepare(query)
 	if err != nil {
@@ -75,7 +86,7 @@ func GetProducts(c *gin.Context) {
 	}
 	defer stmt.Close()
 
-	rows, err := stmt.Query(cate1, cate2)
+	rows, err := stmt.Query(cate1, cate2, cate3, cate4)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -91,17 +102,22 @@ func GetProducts(c *gin.Context) {
 			&productQuery.Description,
 			&productQuery.Cate1,
 			&productQuery.Cate2,
-			&productQuery.Color,
-			&productQuery.Size,
+			&productQuery.Cate3,
+			&productQuery.Cate4,
+			&productQuery.Propertises,
 		)
 		if err != nil {
-			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
+			log.Fatal(err)
+			// c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
+			return
 		}
 		productsQuery = append(productsQuery, productQuery)
 	}
 	err = rows.Err()
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
+		log.Fatal(err)
+		// c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
+		return
 	}
 
 	// Pagination
@@ -137,7 +153,7 @@ func AddProduct(c *gin.Context) {
 
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
 
-	query := "INSERT INTO products ( id, sku, name, price, number, description, cate1, cate2, color, size) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
+	query := "INSERT INTO products ( id, sku, name, price, number, description, cate1, cate2, cate3, cate4, propertises) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	stmt, err := db.Prepare(query)
 	if err != nil {
 		log.Fatal(err)
@@ -151,8 +167,9 @@ func AddProduct(c *gin.Context) {
 		newProduct.Description,
 		newProduct.Cate1,
 		newProduct.Cate2,
-		newProduct.Color,
-		newProduct.Size,
+		newProduct.Cate3,
+		newProduct.Cate4,
+		newProduct.Propertises.String(),
 	)
 	if err != nil {
 		log.Fatal(err)
@@ -180,7 +197,7 @@ func UpdateProduct(c *gin.Context) {
 
 	query := `
 	UPDATE products 
-	SET sku = ?, name = ?, price = ?, number = ?, description = ?, cate1 = ?, cate2 = ?, color = ?, size = ?
+	SET sku = ?, name = ?, price = ?, number = ?, description = ?, cate1 = ?, cate2 = ?, cate3 = ?, cate4 = ?, propertises = ?
 	WHERE id = ?
 	`
 
@@ -197,8 +214,9 @@ func UpdateProduct(c *gin.Context) {
 		updateProduct.Description,
 		updateProduct.Cate1,
 		updateProduct.Cate2,
-		updateProduct.Color,
-		updateProduct.Size,
+		updateProduct.Cate3,
+		updateProduct.Cate4,
+		updateProduct.Propertises.String(),
 		id,
 	)
 	if err != nil {
