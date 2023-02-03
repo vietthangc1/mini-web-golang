@@ -1,15 +1,15 @@
-package main
+package models
 
 import (
 	"encoding/json"
 )
 
-type propertises struct {
+type Propertises struct {
 	Color string `json:"color"`
 	Brand string `json:"brand"`
 	Size  string `json:"size"`
 }
-type product struct {
+type Product struct {
 	ID          string      `json:"id"`
 	SKU         string      `json:"sku"`
 	Name        string      `json:"name"`
@@ -20,11 +20,11 @@ type product struct {
 	Cate2       string      `json:"cate2"`
 	Cate3       string      `json:"cate3"`
 	Cate4       string      `json:"cate4"`
-	Propertises propertises `json:"propertises"`
+	Propertises Propertises `json:"propertises"`
 }
 
 // Scan String to Struct for GET method
-func parseJSONToModel(src interface{}, dest interface{}) error {
+func ParseJSONToModel(src interface{}, dest interface{}) error {
 	var data []byte
 
 	if b, ok := src.([]byte); ok {
@@ -38,12 +38,12 @@ func parseJSONToModel(src interface{}, dest interface{}) error {
 	return json.Unmarshal(data, dest)
 }
 
-func (p *propertises) Scan(src interface{}) error {
-	return parseJSONToModel(src, p)
+func (p *Propertises) Scan(src interface{}) error {
+	return ParseJSONToModel(src, p)
 }
 
 // Convert Propertise to String for POST method
-func (p propertises) String() string {
+func (p Propertises) String() string {
 	out, err := json.Marshal(p)
 	if (err != nil) {
 		panic(err)

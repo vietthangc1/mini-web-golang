@@ -6,9 +6,8 @@ import (
 	"time"
 
 	_ "github.com/go-sql-driver/mysql"
+	"github.com/vietthangc1/mini-web-golang/routes"
 )
-
-var db *sql.DB
 
 func main() {
 	db, err := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
@@ -30,7 +29,7 @@ func main() {
 		fmt.Println("Successful database connection")
 	}
 
-	router := GenerateRoutes()
+	router := routes.GenerateRoutes()
 
 	fmt.Println("Running at http://127.0.0.1:8080")
 	router.Run("127.0.0.1:8080")

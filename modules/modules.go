@@ -1,15 +1,17 @@
-package main
+package modules
 
 import (
 	"database/sql"
 	"fmt"
 	"strconv"
 	"time"
+
+	"github.com/vietthangc1/mini-web-golang/models"
 )
 
-func QueryGetProductByID (q string, id string) (product, error) {
+func QueryGetProductByID (q string, id string) (models.Product, error) {
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
-	var productQuery product
+	var productQuery models.Product 
 
 	err := db.QueryRow(q, id).Scan(
 		&productQuery.ID,
@@ -26,27 +28,27 @@ func QueryGetProductByID (q string, id string) (product, error) {
 	)
 
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	return productQuery, nil
 }
 
-func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]product, error) {
+func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]models.Product, error) {
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
 	var (
-		productQuery  product
-		productsQuery []product
+		productQuery  models.Product
+		productsQuery []models.Product
 	)
 
 	stmt, err := db.Prepare(q)
 	if err != nil {
-		return []product{}, err
+		return []models.Product{}, err
 	}
 	defer stmt.Close()
 
 	rows, err := stmt.Query(cate1, cate2, cate3, cate4)
 	if err != nil {
-		return []product{}, err
+		return []models.Product{}, err
 	}
 	defer rows.Close()
 
@@ -65,20 +67,20 @@ func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]product, error) 
 			&productQuery.Propertises,
 		)
 		if err != nil {
-			return []product{}, err
+			return []models.Product{}, err
 		}
 		productsQuery = append(productsQuery, productQuery)
 	}
 	err = rows.Err()
 	if err != nil {
-		return []product{}, err
+		return []models.Product{}, err
 	}
 	return productsQuery, nil
 }
 
-func QueryAddProduct(q string, p product) (product, error) {
+func QueryAddProduct(q string, p models.Product) (models.Product, error) {
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
-	var newProduct product
+	var newProduct models.Product
 
 	fmt.Println(p)
 
@@ -87,7 +89,7 @@ func QueryAddProduct(q string, p product) (product, error) {
 
 	stmt, err := db.Prepare(q)
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	res, err := stmt.Exec(
 		p.ID,
@@ -103,27 +105,27 @@ func QueryAddProduct(q string, p product) (product, error) {
 		p.Propertises.String(),
 	)
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	lastId, err := res.LastInsertId()
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
 
 	return p, nil
 }
 
-func QueryUpdateProduct(q string, id string, p product) (product, error) {
+func QueryUpdateProduct(q string, id string, p models.Product) (models.Product, error) {
 	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
 
 	stmt, err := db.Prepare(q)
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	p.ID = id
 	res, err := stmt.Exec(
@@ -140,15 +142,15 @@ func QueryUpdateProduct(q string, id string, p product) (product, error) {
 		id,
 	)
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	lastId, err := res.LastInsertId()
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	rowCnt, err := res.RowsAffected()
 	if err != nil {
-		return product{}, err
+		return models.Product{}, err
 	}
 	fmt.Printf("ID = %d, affected = %d\n", lastId, rowCnt)
 

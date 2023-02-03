@@ -1,4 +1,4 @@
-package main
+package handlers
 
 import (
 	"log"
@@ -8,19 +8,21 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vietthangc1/mini-web-golang/models"
+	"github.com/vietthangc1/mini-web-golang/modules"
 )
 
 func HandlerGetProductByID(c *gin.Context) {
 	id := c.Param("id")
 	var (
-		productQuery product
+		productQuery models.Product
 	)
 	query := `
 	SELECT id, sku, name, price, number, description, cate1, cate2, coalesce(cate3, '') as cate3, coalesce(cate4, '') as cate4, propertises
 	FROM products 
 	WHERE id = ?
 	`
-	productQuery, err := QueryGetProductByID(query, id)
+	productQuery, err := modules.QueryGetProductByID(query, id)
 
 	if err != nil {
 		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
@@ -31,7 +33,7 @@ func HandlerGetProductByID(c *gin.Context) {
 
 func HandlerGetProducts(c *gin.Context) {
 	var (
-		productsQuery []product
+		productsQuery []models.Product
 	)
 
 	filterProducts := c.Request.URL.Query()
@@ -62,7 +64,7 @@ func HandlerGetProducts(c *gin.Context) {
 	AND cate3 like ?
 	AND cate4 like ?
 	`
-	productsQuery, err := QueryGetProducts(query, cate1, cate2, cate3, cate4)
+	productsQuery, err := modules.QueryGetProducts(query, cate1, cate2, cate3, cate4)
 	if err != nil {
 		log.Fatal(err)
 		return
@@ -81,7 +83,7 @@ func HandlerGetProducts(c *gin.Context) {
 	positionStart := (pageNum-1)*productPerPage
 	positionEnd := int(math.Min(float64(pageNum*productPerPage), float64(len(productsQuery))))
 
-	productsPagination := []product{}
+	productsPagination := []models.Product{}
 	if (positionStart < positionEnd) {
 		productsPagination = productsQuery[positionStart:positionEnd]
 	}
@@ -90,7 +92,7 @@ func HandlerGetProducts(c *gin.Context) {
 }
 
 func HandlerAddProduct(c *gin.Context) {
-	var newProduct product
+	var newProduct models.Product
 
 	if err := c.BindJSON(&newProduct); err != nil {
 		return
@@ -101,7 +103,7 @@ func HandlerAddProduct(c *gin.Context) {
 
 	query := "INSERT INTO products ( id, sku, name, price, number, description, cate1, cate2, cate3, cate4, propertises) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	
-	newProduct, err := QueryAddProduct(query, newProduct)
+	newProduct, err := modules.QueryAddProduct(query, newProduct)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -109,7 +111,7 @@ func HandlerAddProduct(c *gin.Context) {
 }
 
 func HandlerUpdateProduct(c *gin.Context) {
-	var updateProduct product
+	var updateProduct models.Product
 
 	id := c.Param("id")
 
@@ -123,7 +125,7 @@ func HandlerUpdateProduct(c *gin.Context) {
 	WHERE id = ?
 	`
 
-	updateProduct, err := QueryUpdateProduct(query, id, updateProduct)
+	updateProduct, err := modules.QueryUpdateProduct(query, id, updateProduct)
 	if err != nil {
 		log.Fatal(err)
 	}
@@ -139,7 +141,7 @@ func HandlerDeleteProduct(c *gin.Context) {
 	WHERE id = ?
 	`
 
-	err := QueryDeleteProduct(query, id)
+	err := modules.QueryDeleteProduct(query, id)
 	if err != nil {
 		log.Fatal(err)
 	}
