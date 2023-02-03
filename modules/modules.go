@@ -3,6 +3,7 @@ package modules
 import (
 	"database/sql"
 	"fmt"
+	"os"
 	"strconv"
 	"time"
 
@@ -10,7 +11,7 @@ import (
 )
 
 func QueryGetProductByID (q string, id string) (models.Product, error) {
-	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
+	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
 	var productQuery models.Product 
 
 	err := db.QueryRow(q, id).Scan(
@@ -34,7 +35,7 @@ func QueryGetProductByID (q string, id string) (models.Product, error) {
 }
 
 func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]models.Product, error) {
-	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
+	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
 	var (
 		productQuery  models.Product
 		productsQuery []models.Product
@@ -79,7 +80,7 @@ func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]models.Product, 
 }
 
 func QueryAddProduct(q string, p models.Product) (models.Product, error) {
-	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
+	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
 	var newProduct models.Product
 
 	fmt.Println(p)
@@ -121,7 +122,7 @@ func QueryAddProduct(q string, p models.Product) (models.Product, error) {
 }
 
 func QueryUpdateProduct(q string, id string, p models.Product) (models.Product, error) {
-	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
+	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
 
 	stmt, err := db.Prepare(q)
 	if err != nil {
@@ -158,7 +159,7 @@ func QueryUpdateProduct(q string, id string, p models.Product) (models.Product, 
 }
 
 func QueryDeleteProduct(q, id string) (error) {
-	db, _ := sql.Open("mysql", "root:Chaugn@rs2@/mini_golang_project")
+	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
 	stmt, err := db.Prepare(q)
 	if err != nil {
 		return err

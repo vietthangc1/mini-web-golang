@@ -5,6 +5,7 @@ import (
 	"log"
 	"math"
 	"net/http"
+	"os"
 	"strconv"
 	"time"
 
@@ -14,7 +15,7 @@ import (
 	"github.com/vietthangc1/mini-web-golang/modules"
 )
 
-var cacheInstance cache.CacheProducts = cache.CreateCache("localhost:6379", 0, 100 *1000000000) // db 0, expire 10s
+var cacheInstance cache.CacheProducts = cache.CreateCache(os.Getenv("redisHost"), 0, 10 *1000000000) // db 0, expire 10s
 
 func HandlerGetProductByID(c *gin.Context) {
 	id := c.Param("id")
