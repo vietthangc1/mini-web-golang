@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"fmt"
 	"log"
 	"math"
 	"net/http"
@@ -8,25 +9,43 @@ import (
 	"time"
 
 	"github.com/gin-gonic/gin"
+	"github.com/vietthangc1/mini-web-golang/cache"
 	"github.com/vietthangc1/mini-web-golang/models"
 	"github.com/vietthangc1/mini-web-golang/modules"
 )
+
+var cacheInstance cache.CacheProducts = cache.CreateCache("localhost:6379", 0, 100 *1000000000) // db 0, expire 10s
 
 func HandlerGetProductByID(c *gin.Context) {
 	id := c.Param("id")
 	var (
 		productQuery models.Product
 	)
-	query := `
-	SELECT id, sku, name, price, number, description, cate1, cate2, coalesce(cate3, '') as cate3, coalesce(cate4, '') as cate4, propertises
-	FROM products 
-	WHERE id = ?
-	`
-	productQuery, err := modules.QueryGetProductByID(query, id)
 
+	val, err := cacheInstance.Get(id)
 	if err != nil {
-		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
-		return
+		query := `
+		SELECT id, sku, name, price, number, description, cate1, cate2, coalesce(cate3, '') as cate3, coalesce(cate4, '') as cate4, propertises
+		FROM products 
+		WHERE id = ?
+		`
+		productQuery, err = modules.QueryGetProductByID(query, id)
+	
+		if err != nil {
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
+			return
+		}
+
+		err = cacheInstance.Set(id, productQuery)
+		if err != nil{
+			fmt.Println("Cannot update cache")
+			fmt.Println(err)
+		} else {
+			fmt.Println("Updated to cache")
+		}
+	} else {
+		fmt.Println("Use cache")
+		productQuery = val
 	}
 	c.IndentedJSON(http.StatusFound, productQuery)
 }
@@ -107,6 +126,15 @@ func HandlerAddProduct(c *gin.Context) {
 	if err != nil {
 		log.Fatal(err)
 	}
+
+	err = cacheInstance.Set(newProduct.ID, newProduct)
+	if err != nil{
+		fmt.Println("Cannot update cache")
+		fmt.Println(err)
+	} else {
+		fmt.Println("Updated to cache")
+	}
+
 	c.IndentedJSON(http.StatusCreated, newProduct)
 }
 
@@ -130,6 +158,14 @@ func HandlerUpdateProduct(c *gin.Context) {
 		log.Fatal(err)
 	}
 
+	err = cacheInstance.Set(id, updateProduct)
+	if err != nil{
+		fmt.Println("Cannot update cache")
+		fmt.Println(err)
+	} else {
+		fmt.Println("Updated to cache")
+	}
+
 	c.IndentedJSON(http.StatusCreated, updateProduct)
 }
 
@@ -146,5 +182,10 @@ func HandlerDeleteProduct(c *gin.Context) {
 		log.Fatal(err)
 	}
 
+	err = cacheInstance.Delete(id)
+	if err != nil{
+		fmt.Println("Cannot delete from cache")
+		fmt.Println(err)
+	}
 	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Deleted!"})
 }

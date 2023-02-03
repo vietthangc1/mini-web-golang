@@ -3,6 +3,8 @@ package cache
 import (
 	"context"
 	"encoding/json"
+	"fmt"
+	"os"
 	"time"
 
 	"github.com/redis/go-redis/v9"
@@ -17,9 +19,10 @@ type CacheInfo struct {
     Expire time.Duration
 }
 
-type CacheFunction interface{
-    Set(key string, value models.Product)
-    Get(key string)
+type CacheProducts interface{
+    Set(key string, value models.Product) error
+    Get(key string) (models.Product,error)
+    Delete(key string) error
 }
 
 func CreateCache(host string, db int, expireTime time.Duration) (*CacheInfo) {
@@ -64,3 +67,27 @@ func (c *CacheInfo) Get(key string) (models.Product, error) {
     json.Unmarshal([]byte(val), &out)
     return out, nil
 }
+
+func (c *CacheInfo) Delete(key string) (error) {
+    rdb := c.getClient()
+    searchPattern := key
+
+	if len(os.Args) > 1 {
+		searchPattern = os.Args[1]
+	}
+
+	var foundedRecordCount int = 0
+	iter := rdb.Scan(ctx, 0, searchPattern, 0).Iterator()
+	fmt.Printf("YOUR SEARCH PATTERN= %s\n", searchPattern)
+	for iter.Next(ctx) {
+		fmt.Printf("Deleted= %s\n", iter.Val())
+		rdb.Del(ctx, iter.Val())
+		foundedRecordCount++
+	}
+	if err := iter.Err(); err != nil {
+		return err
+	}
+	fmt.Printf("Deleted Count %d\n", foundedRecordCount)
+    return nil
+}
+
