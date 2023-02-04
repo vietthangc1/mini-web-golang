@@ -2,7 +2,6 @@ package handlers
 
 import (
 	"fmt"
-	"log"
 	"math"
 	"net/http"
 	"os"
@@ -76,7 +75,7 @@ func HandlerGetProducts(c *gin.Context) {
 	}
 
 	query := `
-	SELECT id, sku, name, price, number, description, cate1, cate2, coalesce(cate3, '') as cate3, coalesce(cate4, '') as cate4, propertises
+	SELECT id, name, price, cate1, cate2, cate3, cate4
 	FROM products 
 	WHERE 1=1
 	AND cate1 like ?
@@ -86,13 +85,14 @@ func HandlerGetProducts(c *gin.Context) {
 	`
 	productsQuery, err := modules.QueryGetProducts(query, cate1, cate2, cate3, cate4)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusBadRequest, err)
 		return
 	}
 
 	// Pagination
 	
-	productPerPage := 2
+	productPerPage := 100000
 	pageNum := 1
 	
 	page := filterProducts.Get("page")	
@@ -115,8 +115,12 @@ func HandlerAddProduct(c *gin.Context) {
 	var newProduct models.Product
 
 	if err := c.BindJSON(&newProduct); err != nil {
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusNotModified, err)
 		return
 	}
+
+	// fmt.Println("run here")
 
 	id := time.Now().UnixMilli()
 	newProduct.ID = strconv.Itoa(int(id))
@@ -125,7 +129,9 @@ func HandlerAddProduct(c *gin.Context) {
 	
 	newProduct, err := modules.QueryAddProduct(query, newProduct)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusNotModified, err)
+		return
 	}
 
 	err = cacheInstance.Set(newProduct.ID, newProduct)
@@ -156,7 +162,9 @@ func HandlerUpdateProduct(c *gin.Context) {
 
 	updateProduct, err := modules.QueryUpdateProduct(query, id, updateProduct)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusNotModified, err)
+		return
 	}
 
 	err = cacheInstance.Set(id, updateProduct)
@@ -180,7 +188,9 @@ func HandlerDeleteProduct(c *gin.Context) {
 
 	err := modules.QueryDeleteProduct(query, id)
 	if err != nil {
-		log.Fatal(err)
+		fmt.Println(err)
+		c.IndentedJSON(http.StatusNotModified, err)
+		return
 	}
 
 	err = cacheInstance.Delete(id)

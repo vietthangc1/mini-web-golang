@@ -56,16 +56,12 @@ func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]models.Product, 
 	for rows.Next() {
 		err = rows.Scan(
 			&productQuery.ID,
-			&productQuery.SKU,
 			&productQuery.Name,
 			&productQuery.Price,
-			&productQuery.Number,
-			&productQuery.Description,
 			&productQuery.Cate1,
 			&productQuery.Cate2,
 			&productQuery.Cate3,
 			&productQuery.Cate4,
-			&productQuery.Propertises,
 		)
 		if err != nil {
 			return []models.Product{}, err
