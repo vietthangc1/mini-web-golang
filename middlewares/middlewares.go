@@ -1,6 +1,11 @@
 package middlewares
 
-import "github.com/gin-gonic/gin"
+import (
+	"net/http"
+
+	"github.com/gin-gonic/gin"
+	"github.com/vietthangc1/mini-web-golang/tokens"
+)
 
 func CORSMiddleware() gin.HandlerFunc {
     return func(c *gin.Context) {
@@ -16,4 +21,16 @@ func CORSMiddleware() gin.HandlerFunc {
 
         c.Next()
     }
+}
+
+func JwtAuthMiddleware() gin.HandlerFunc {
+	return func(c *gin.Context) {
+		err := tokens.TokenValid(c)
+		if err != nil {
+			c.String(http.StatusUnauthorized, "Unauthorized")
+			c.Abort()
+			return
+		}
+		c.Next()
+	}
 }

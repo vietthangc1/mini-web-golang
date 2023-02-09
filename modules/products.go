@@ -79,8 +79,6 @@ func QueryAddProduct(q string, p models.Product) (models.Product, error) {
 	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
 	var newProduct models.Product
 
-	fmt.Println(p)
-
 	id := time.Now().UnixMilli()
 	newProduct.ID = strconv.Itoa(int(id))
 

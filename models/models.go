@@ -23,6 +23,12 @@ type Product struct {
 	Propertises Propertises `json:"propertises"`
 }
 
+type User struct {
+	ID       string `json:"id"`
+	Email    string `json:"email"`
+	Password string `json:"password"`
+}
+
 // Scan String to Struct for GET method
 func ParseJSONToModel(src interface{}, dest interface{}) error {
 	var data []byte
@@ -45,7 +51,7 @@ func (p *Propertises) Scan(src interface{}) error {
 // Convert Propertise to String for POST method
 func (p Propertises) String() string {
 	out, err := json.Marshal(p)
-	if (err != nil) {
+	if err != nil {
 		panic(err)
 	}
 	return string(out)
