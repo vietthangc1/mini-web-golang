@@ -3,15 +3,13 @@ package modules
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/vietthangc1/mini-web-golang/models"
 )
 
-func QueryGetProductByID (q string, id string) (models.Product, error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
+func QueryGetProductByID (db *sql.DB, q string, id string) (models.Product, error) {
 	var productQuery models.Product 
 
 	err := db.QueryRow(q, id).Scan(
@@ -34,8 +32,7 @@ func QueryGetProductByID (q string, id string) (models.Product, error) {
 	return productQuery, nil
 }
 
-func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]models.Product, error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
+func QueryGetProducts (db *sql.DB, q, cate1, cate2, cate3, cate4 string) ([]models.Product, error) {
 	var (
 		productQuery  models.Product
 		productsQuery []models.Product
@@ -75,8 +72,7 @@ func QueryGetProducts (q, cate1, cate2, cate3, cate4 string) ([]models.Product, 
 	return productsQuery, nil
 }
 
-func QueryAddProduct(q string, p models.Product) (models.Product, error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
+func QueryAddProduct(db *sql.DB, q string, p models.Product) (models.Product, error) {
 	var newProduct models.Product
 
 	id := time.Now().UnixMilli()
@@ -115,9 +111,7 @@ func QueryAddProduct(q string, p models.Product) (models.Product, error) {
 	return p, nil
 }
 
-func QueryUpdateProduct(q string, id string, p models.Product) (models.Product, error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
-
+func QueryUpdateProduct(db *sql.DB, q string, id string, p models.Product) (models.Product, error) {
 	stmt, err := db.Prepare(q)
 	if err != nil {
 		return models.Product{}, err
@@ -152,8 +146,7 @@ func QueryUpdateProduct(q string, id string, p models.Product) (models.Product, 
 	return p, nil
 }
 
-func QueryDeleteProduct(q, id string) (error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
+func QueryDeleteProduct(db *sql.DB, q, id string) (error) {
 	stmt, err := db.Prepare(q)
 	if err != nil {
 		return err

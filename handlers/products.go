@@ -4,19 +4,16 @@ import (
 	"fmt"
 	"math"
 	"net/http"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/gin-gonic/gin"
-	"github.com/vietthangc1/mini-web-golang/cache"
 	"github.com/vietthangc1/mini-web-golang/models"
 	"github.com/vietthangc1/mini-web-golang/modules"
 )
 
-var cacheInstance cache.CacheProducts = cache.CreateCache(os.Getenv("redisHost"), 0, 10 *1000000000) // db 0, expire 10s
 
-func HandlerGetProductByID(c *gin.Context) {
+func (h *BaseHandler) HandlerGetProductByID(c *gin.Context) {
 	id := c.Param("id")
 	var (
 		productQuery models.Product
@@ -29,7 +26,7 @@ func HandlerGetProductByID(c *gin.Context) {
 		FROM products 
 		WHERE id = ?
 		`
-		productQuery, err = modules.QueryGetProductByID(query, id)
+		productQuery, err = modules.QueryGetProductByID(h.db, query, id)
 	
 		if err != nil {
 			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
@@ -50,7 +47,7 @@ func HandlerGetProductByID(c *gin.Context) {
 	c.IndentedJSON(http.StatusFound, productQuery)
 }
 
-func HandlerGetProducts(c *gin.Context) {
+func (h *BaseHandler) HandlerGetProducts(c *gin.Context) {
 	var (
 		productsQuery []models.Product
 	)
@@ -83,7 +80,7 @@ func HandlerGetProducts(c *gin.Context) {
 	AND cate3 like ?
 	AND cate4 like ?
 	`
-	productsQuery, err := modules.QueryGetProducts(query, cate1, cate2, cate3, cate4)
+	productsQuery, err := modules.QueryGetProducts(h.db, query, cate1, cate2, cate3, cate4)
 	if err != nil {
 		fmt.Println(err)
 		c.IndentedJSON(http.StatusBadRequest, err)
@@ -111,7 +108,7 @@ func HandlerGetProducts(c *gin.Context) {
 	c.IndentedJSON(http.StatusFound, productsPagination)
 }
 
-func HandlerAddProduct(c *gin.Context) {
+func (h *BaseHandler) HandlerAddProduct(c *gin.Context) {
 	var newProduct models.Product
 
 	if err := c.BindJSON(&newProduct); err != nil {
@@ -127,7 +124,7 @@ func HandlerAddProduct(c *gin.Context) {
 
 	query := "INSERT INTO products ( id, sku, name, price, number, description, cate1, cate2, cate3, cate4, propertises) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
 	
-	newProduct, err := modules.QueryAddProduct(query, newProduct)
+	newProduct, err := modules.QueryAddProduct(h.db, query, newProduct)
 	if err != nil {
 		fmt.Println(err)
 		c.IndentedJSON(http.StatusNotModified, err)
@@ -145,7 +142,7 @@ func HandlerAddProduct(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, newProduct)
 }
 
-func HandlerUpdateProduct(c *gin.Context) {
+func (h *BaseHandler) HandlerUpdateProduct(c *gin.Context) {
 	var updateProduct models.Product
 
 	id := c.Param("id")
@@ -160,7 +157,7 @@ func HandlerUpdateProduct(c *gin.Context) {
 	WHERE id = ?
 	`
 
-	updateProduct, err := modules.QueryUpdateProduct(query, id, updateProduct)
+	updateProduct, err := modules.QueryUpdateProduct(h.db, query, id, updateProduct)
 	if err != nil {
 		fmt.Println(err)
 		c.IndentedJSON(http.StatusNotModified, err)
@@ -178,7 +175,7 @@ func HandlerUpdateProduct(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, updateProduct)
 }
 
-func HandlerDeleteProduct(c *gin.Context) {
+func (h *BaseHandler) HandlerDeleteProduct(c *gin.Context) {
 	id := c.Param("id")
 
 	query := `
@@ -186,7 +183,7 @@ func HandlerDeleteProduct(c *gin.Context) {
 	WHERE id = ?
 	`
 
-	err := modules.QueryDeleteProduct(query, id)
+	err := modules.QueryDeleteProduct(h.db, query, id)
 	if err != nil {
 		fmt.Println(err)
 		c.IndentedJSON(http.StatusNotModified, err)

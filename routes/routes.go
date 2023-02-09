@@ -1,29 +1,38 @@
 package routes
 
 import (
+	"log"
+
 	"github.com/gin-gonic/gin"
 	"github.com/vietthangc1/mini-web-golang/handlers"
 	"github.com/vietthangc1/mini-web-golang/middlewares"
+	"github.com/vietthangc1/mini-web-golang/models"
 )
 
 func GenerateRoutes() *gin.Engine  {
+	db, err := models.ConnectDatabase()
+	if (err != nil) {
+		log.Fatal(err)
+	}
+	h := handlers.NewBaseHandler(db)
+	
 	router := gin.Default()
 
 	router.Use(middlewares.CORSMiddleware())
 
-	router.GET("/products", handlers.HandlerGetProducts)
-	router.POST("/product", handlers.HandlerAddProduct)
-	router.PUT("/product/:id", handlers.HandlerUpdateProduct)
-	router.GET("/product/:id", handlers.HandlerGetProductByID)
-	router.DELETE("/product/:id", handlers.HandlerDeleteProduct)
+	router.GET("/products", h.HandlerGetProducts)
+	router.POST("/product", h.HandlerAddProduct)
+	router.PUT("/product/:id", h.HandlerUpdateProduct)
+	router.GET("/product/:id", h.HandlerGetProductByID)
+	router.DELETE("/product/:id", h.HandlerDeleteProduct)
 
-	router.POST("/user", handlers.HandlerAddUser)
-	router.POST("/login", handlers.HandlerLogin)
-	router.DELETE("/user/:id", handlers.HandlerDeleteUser)
+	router.POST("/user", h.HandlerAddUser)
+	router.POST("/login", h.HandlerLogin)
+	router.DELETE("/user/:id", h.HandlerDeleteUser)
 
 	private := router.Group("/")
 	private.Use(middlewares.JwtAuthMiddleware())
-	private.GET("/user", handlers.HandlerGetUser)
+	private.GET("/user", h.HandlerGetUser)
 
 	return router
 }

@@ -3,15 +3,13 @@ package modules
 import (
 	"database/sql"
 	"fmt"
-	"os"
 	"strconv"
 	"time"
 
 	"github.com/vietthangc1/mini-web-golang/models"
 )
 
-func QueryAddUser(q string, u models.User) (models.User, error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
+func QueryAddUser(db *sql.DB, q string, u models.User) (models.User, error) {
 	var newUser models.User
 
 	id := time.Now().UnixMilli()
@@ -44,8 +42,7 @@ func QueryAddUser(q string, u models.User) (models.User, error) {
 
 }
 
-func QueryDeleteUser(q, id string) (error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
+func QueryDeleteUser(db *sql.DB, q, id string) (error) {
 	stmt, err := db.Prepare(q)
 	if err != nil {
 		return err
@@ -68,8 +65,7 @@ func QueryDeleteUser(q, id string) (error) {
 	return nil
 }
 
-func QueryGetUserByEmail (q string, email string) (models.User, error) {
-	db, _ := sql.Open("mysql", os.Getenv("mysqlLogin"))
+func QueryGetUserByEmail (db *sql.DB, q string, email string) (models.User, error) {
 	var userQuery models.User 
 
 	err := db.QueryRow(q, email).Scan(
