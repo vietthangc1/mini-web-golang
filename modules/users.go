@@ -3,18 +3,12 @@ package modules
 import (
 	"database/sql"
 	"fmt"
-	"strconv"
-	"time"
 
 	"github.com/vietthangc1/mini-web-golang/models"
+	"gorm.io/gorm"
 )
 
 func QueryAddUser(db *sql.DB, q string, u models.User) (models.User, error) {
-	var newUser models.User
-
-	id := time.Now().UnixMilli()
-	newUser.ID = strconv.Itoa(int(id))
-
 	stmt, err := db.Prepare(q)
 	if err != nil {
 		return models.User{}, err
@@ -78,4 +72,26 @@ func QueryGetUserByEmail (db *sql.DB, q string, email string) (models.User, erro
 		return models.User{}, err
 	}
 	return userQuery, nil
+}
+
+func AddUser(db *gorm.DB, newUser *models.User) (error) {
+	err := db.Create(newUser).Error
+	if err != nil {
+		return err
+	}
+	return nil
+}
+
+func DeleteUser(db *gorm.DB, userDelete *models.User, id uint) (error) {
+	db.Where("id = ?", id).Delete(userDelete)
+	return nil
+}
+
+func GetUserByEmail (db *gorm.DB, userQuery *models.User , email string) (error) {
+	err := db.Preload("Products.Propertises").Where("email = ?", email).First(userQuery).Error
+
+	if err != nil {
+		return err
+	}
+	return nil
 }

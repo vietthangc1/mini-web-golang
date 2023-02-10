@@ -1,17 +1,17 @@
 package handlers
 
 import (
-	"database/sql"
 	"os"
 
 	"github.com/vietthangc1/mini-web-golang/cache"
+	"gorm.io/gorm"
 )
 
 type BaseHandler struct{
-	db *sql.DB
+	db *gorm.DB
 }
 
-func NewBaseHandler(db *sql.DB) *BaseHandler {
+func NewBaseHandler(db *gorm.DB) *BaseHandler {
 	return &BaseHandler{
 		db: db,
 	}

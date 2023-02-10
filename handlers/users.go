@@ -4,7 +4,6 @@ import (
 	"fmt"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vietthangc1/mini-web-golang/models"
@@ -20,13 +19,10 @@ func (h *BaseHandler) HandlerAddUser(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotModified, gin.H{"error": err.Error()})
 		return
 	}
-	id := time.Now().UnixMilli()
-	loginUser.ID = strconv.Itoa(int(id))
+
 	loginUser.Password, _ = modules.HasingPassword(loginUser.Password)
 
-	query := "INSERT INTO users (id, email, password) VALUES (?, ?, ?)"
-
-	loginUser, err := modules.QueryAddUser(h.db, query, loginUser)
+	err := modules.AddUser(h.db, &loginUser)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"error": err.Error()})
@@ -37,13 +33,11 @@ func (h *BaseHandler) HandlerAddUser(c *gin.Context) {
 
 func (h *BaseHandler) HandlerDeleteUser(c *gin.Context) {
 	id := c.Param("id")
+	var userDelete models.User
 
-	query := `
-	DELETE FROM users 
-	WHERE id = ?
-	`
-
-	err := modules.QueryDeleteUser(h.db, query, id)
+	_id, _ := strconv.ParseUint(id, 10, 32)
+	
+	err := modules.DeleteUser(h.db, &userDelete, uint(_id))
 	if err != nil {
 		fmt.Println(err)
 		c.IndentedJSON(http.StatusNotModified, gin.H{"error": err.Error()})
@@ -70,48 +64,39 @@ func (h *BaseHandler) HandlerLogin(c *gin.Context) {
 	email := loginUser.Email
 	password := loginUser.Password
 
-	query := "SELECT id, email, password FROM users WHERE email = ?"
-
-	loginUser, err := modules.QueryGetUserByEmail(h.db, query, email)
+	err := modules.GetUserByEmail(h.db, &loginUser, email)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	check := modules.ComparePassword(password, loginUser.Password)
-
 	if !check {
 		fmt.Println("Wrong Email or Password")
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Wrong Email or Password"})
 		return
 	}
-
 	token, err := tokens.GenerateToken(loginUser.Email)
 	if (err != nil) {
 		fmt.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
-
 	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
 }
 
 func (h *BaseHandler) HandlerGetUser(c *gin.Context) {
+	var currentUser models.User
 	user_email, err := tokens.ExtractTokenEmail(c)
 	if (err != nil) {
 		c.IndentedJSON(http.StatusNonAuthoritativeInfo, gin.H{"error": err.Error()})
 	}
-
-	query := "SELECT id, email, password FROM users WHERE email = ?"
-
-	currentUser, err := modules.QueryGetUserByEmail(h.db, query, user_email)
+	err = modules.GetUserByEmail(h.db, &currentUser, user_email)
 	if err != nil {
 		fmt.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
 	}
 	currentUser.Password = ""
-
 	c.IndentedJSON(http.StatusOK, currentUser)
 }

@@ -1,18 +1,20 @@
 package models
 
 import (
-	"encoding/json"
+	"gorm.io/gorm"
 )
 
 type Propertises struct {
-	Color string `json:"color"`
-	Brand string `json:"brand"`
-	Size  string `json:"size"`
+	gorm.Model
+	ProductID uint   `json:"product_id"`
+	Color     string `json:"color"`
+	Brand     string `json:"brand"`
+	Size      string `json:"size"`
 }
 type Product struct {
-	ID          string      `json:"id"`
-	SKU         string      `json:"sku"`
-	Name        string      `json:"name"`
+	gorm.Model
+	SKU         string      `gorm:"size:150" json:"sku"`
+	Name        string      `gorm:"size:150" json:"name"`
 	Price       float64     `json:"price"`
 	Number      int64       `json:"number"`
 	Description string      `json:"description"`
@@ -20,39 +22,13 @@ type Product struct {
 	Cate2       string      `json:"cate2"`
 	Cate3       string      `json:"cate3"`
 	Cate4       string      `json:"cate4"`
-	Propertises Propertises `json:"propertises"`
+	Propertises Propertises `gorm:"foreignKey:ProductID;references:ID;constraint:OnDelete:CASCADE" json:"propertises"`
+	UserEmail   string      `gorm:"size:150" json:"user_email"`
 }
 
 type User struct {
-	ID       string `json:"id"`
-	Email    string `json:"email"`
-	Password string `json:"password"`
-}
-
-// Scan String to Struct for GET method
-func ParseJSONToModel(src interface{}, dest interface{}) error {
-	var data []byte
-
-	if b, ok := src.([]byte); ok {
-		data = b
-	} else if s, ok := src.(string); ok {
-		data = []byte(s)
-	} else if src == nil {
-		return nil
-	}
-
-	return json.Unmarshal(data, dest)
-}
-
-func (p *Propertises) Scan(src interface{}) error {
-	return ParseJSONToModel(src, p)
-}
-
-// Convert Propertise to String for POST method
-func (p Propertises) String() string {
-	out, err := json.Marshal(p)
-	if err != nil {
-		panic(err)
-	}
-	return string(out)
+	gorm.Model
+	Email    string    `gorm:"unique;size:150" json:"email"`
+	Password string    `json:"password"`
+	Products []Product `gorm:"foreignKey:UserEmail;references:Email"`
 }

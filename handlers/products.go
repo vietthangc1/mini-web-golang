@@ -1,47 +1,44 @@
 package handlers
 
 import (
-	"fmt"
-	"math"
+	"log"
 	"net/http"
 	"strconv"
-	"time"
 
 	"github.com/gin-gonic/gin"
 	"github.com/vietthangc1/mini-web-golang/models"
 	"github.com/vietthangc1/mini-web-golang/modules"
+	"github.com/vietthangc1/mini-web-golang/tokens"
 )
-
 
 func (h *BaseHandler) HandlerGetProductByID(c *gin.Context) {
 	id := c.Param("id")
-	var (
-		productQuery models.Product
-	)
+	var productQuery models.Product
 
 	val, err := cacheInstance.Get(id)
 	if err != nil {
-		query := `
-		SELECT id, sku, name, price, number, description, cate1, cate2, coalesce(cate3, '') as cate3, coalesce(cate4, '') as cate4, propertises
-		FROM products 
-		WHERE id = ?
-		`
-		productQuery, err = modules.QueryGetProductByID(h.db, query, id)
-	
+		_id, err := strconv.ParseUint(id, 10, 32)
 		if err != nil {
-			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err})
+			log.Println(err.Error())
+			c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
+			return
+		}
+		err = modules.GetProductByID(h.db, &productQuery, uint(_id))
+		if err != nil {
+			log.Println(err.Error())
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			return
 		}
 
 		err = cacheInstance.Set(id, productQuery)
-		if err != nil{
-			fmt.Println("Cannot update cache")
-			fmt.Println(err)
+		if err != nil {
+			log.Println("Cannot update cache")
+			log.Println(err.Error())
 		} else {
-			fmt.Println("Updated to cache")
+			log.Println("Updated to cache")
 		}
 	} else {
-		fmt.Println("Use cache")
+		log.Println("Use cache")
 		productQuery = val
 	}
 	c.IndentedJSON(http.StatusFound, productQuery)
@@ -52,91 +49,64 @@ func (h *BaseHandler) HandlerGetProducts(c *gin.Context) {
 		productsQuery []models.Product
 	)
 
-	filterProducts := c.Request.URL.Query()
+	filter := c.Request.URL.Query()
 
-	cate1 := filterProducts.Get("cate1")
-	if cate1 == "" {
-		cate1 = "%%"
-	}
-	cate2 := filterProducts.Get("cate2")
-	if cate2 == "" {
-		cate2 = "%%"
-	}
-	cate3 := filterProducts.Get("cate3")
-	if cate3 == "" {
-		cate3 = "%%"
-	}
-	cate4 := filterProducts.Get("cate4")
-	if cate4 == "" {
-		cate4 = "%%"
+	arrayProductFilter := []string{"cate1", "cate2", "cate3", "cate4"}
+	productFilter := make(map[string]interface{})
+	for k, v := range filter {
+		if modules.Contains(arrayProductFilter, k) {
+			productFilter[k] = v
+		}
 	}
 
-	query := `
-	SELECT id, name, price, cate1, cate2, cate3, cate4
-	FROM products 
-	WHERE 1=1
-	AND cate1 like ?
-	AND cate2 like ?
-	AND cate3 like ?
-	AND cate4 like ?
-	`
-	productsQuery, err := modules.QueryGetProducts(h.db, query, cate1, cate2, cate3, cate4)
+	arrayPropertisesFilter := []string{"color", "brand", "size"}
+	propertisesFilter := make(map[string]interface{})
+	for k, v := range filter {
+		if modules.Contains(arrayPropertisesFilter, k) {
+			propertisesFilter[k] = v
+		}
+	}
+
+	log.Println(productFilter)
+	log.Println(propertisesFilter)
+
+	err := modules.GetProducts(h.db, &productsQuery, productFilter, propertisesFilter)
 	if err != nil {
-		fmt.Println(err)
-		c.IndentedJSON(http.StatusBadRequest, err)
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
 		return
 	}
-
-	// Pagination
-	
-	productPerPage := 100000
-	pageNum := 1
-	
-	page := filterProducts.Get("page")	
-	if (page != "") {
-		pageNum, _ = strconv.Atoi(page) 
-	}
-
-	positionStart := (pageNum-1)*productPerPage
-	positionEnd := int(math.Min(float64(pageNum*productPerPage), float64(len(productsQuery))))
-
-	productsPagination := []models.Product{}
-	if (positionStart < positionEnd) {
-		productsPagination = productsQuery[positionStart:positionEnd]
-	}
-
-	c.IndentedJSON(http.StatusFound, productsPagination)
+	c.IndentedJSON(http.StatusFound, productsQuery)
 }
 
 func (h *BaseHandler) HandlerAddProduct(c *gin.Context) {
 	var newProduct models.Product
+	user_email, err := tokens.ExtractTokenEmail(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusNonAuthoritativeInfo, gin.H{"error": err.Error()})
+	}
 
 	if err := c.BindJSON(&newProduct); err != nil {
-		fmt.Println(err)
-		c.IndentedJSON(http.StatusNotModified, err)
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
+	newProduct.UserEmail = user_email
 
-	// fmt.Println("run here")
-
-	id := time.Now().UnixMilli()
-	newProduct.ID = strconv.Itoa(int(id))
-
-	query := "INSERT INTO products ( id, sku, name, price, number, description, cate1, cate2, cate3, cate4, propertises) VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)"
-	
-	newProduct, err := modules.QueryAddProduct(h.db, query, newProduct)
+	err = modules.AddProduct(h.db, &newProduct)
 	if err != nil {
-		fmt.Println(err)
-		c.IndentedJSON(http.StatusNotModified, err)
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
 
-	err = cacheInstance.Set(newProduct.ID, newProduct)
-	if err != nil{
-		fmt.Println("Cannot update cache")
-		fmt.Println(err)
+	id := strconv.FormatUint(uint64(newProduct.ID), 10)
+	err = cacheInstance.Set(id, newProduct)
+	if err != nil {
+		log.Println("Cannot update cache")
+		log.Println(err.Error())
 	} else {
-		fmt.Println("Updated to cache")
+		log.Println("Updated to cache")
 	}
 
 	c.IndentedJSON(http.StatusCreated, newProduct)
@@ -144,56 +114,66 @@ func (h *BaseHandler) HandlerAddProduct(c *gin.Context) {
 
 func (h *BaseHandler) HandlerUpdateProduct(c *gin.Context) {
 	var updateProduct models.Product
+	user_email, err := tokens.ExtractTokenEmail(c)
+	if err != nil {
+		c.IndentedJSON(http.StatusNonAuthoritativeInfo, gin.H{"error": err.Error()})
+	}
 
 	id := c.Param("id")
 
 	if err := c.BindJSON(&updateProduct); err != nil {
 		return
 	}
+	updateProduct.UserEmail = user_email
 
-	query := `
-	UPDATE products 
-	SET sku = ?, name = ?, price = ?, number = ?, description = ?, cate1 = ?, cate2 = ?, cate3 = ?, cate4 = ?, propertises = ?
-	WHERE id = ?
-	`
-
-	updateProduct, err := modules.QueryUpdateProduct(h.db, query, id, updateProduct)
+	_id, err := strconv.ParseUint(id, 10, 32)
 	if err != nil {
-		fmt.Println(err)
-		c.IndentedJSON(http.StatusNotModified, err)
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
+		return
+	}
+	updateProduct.ID = uint(_id)
+
+	err = modules.UpdateProduct(h.db, &updateProduct)
+	if err != nil {
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
 
 	err = cacheInstance.Set(id, updateProduct)
-	if err != nil{
-		fmt.Println("Cannot update cache")
-		fmt.Println(err)
+	if err != nil {
+		log.Println("Cannot update cache")
+		log.Println(err.Error())
 	} else {
-		fmt.Println("Updated to cache")
+		log.Println("Updated to cache")
 	}
 
-	c.IndentedJSON(http.StatusCreated, updateProduct)
+	c.IndentedJSON(http.StatusOK, updateProduct)
 }
 
 func (h *BaseHandler) HandlerDeleteProduct(c *gin.Context) {
 	id := c.Param("id")
-
-	query := `
-	DELETE FROM products 
-	WHERE id = ?
-	`
-
-	err := modules.QueryDeleteProduct(h.db, query, id)
+	_id, err := strconv.ParseUint(id, 10, 32)
 	if err != nil {
-		fmt.Println(err)
-		c.IndentedJSON(http.StatusNotModified, err)
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
+		return
+	}
+
+	var deleteProduct models.Product
+
+	err = modules.DeleteProduct(h.db, &deleteProduct, uint(_id))
+	if err != nil {
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
 
 	err = cacheInstance.Delete(id)
-	if err != nil{
-		fmt.Println("Cannot delete from cache")
-		fmt.Println(err)
+	if err != nil {
+		log.Println("Cannot delete from cache")
+		log.Println(err.Error())
 	}
-	c.IndentedJSON(http.StatusCreated, gin.H{"message": "Deleted!"})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Deleted!"})
 }

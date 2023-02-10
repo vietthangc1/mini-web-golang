@@ -3,8 +3,12 @@ package models
 import (
 	"database/sql"
 	"fmt"
+	"log"
 	"os"
 	"time"
+
+	"gorm.io/driver/mysql"
+	"gorm.io/gorm"
 )
 
 func ConnectDatabase() (*sql.DB, error) {
@@ -23,5 +27,22 @@ func ConnectDatabase() (*sql.DB, error) {
 		return nil,err
 	}		
 	fmt.Println("Successful database connection")
+	return db, nil
+}
+
+func ConnectDatabaseORM() (*gorm.DB, error) {
+	db, err := gorm.Open(mysql.Open(os.Getenv("mysqlLogin")), &gorm.Config{
+		QueryFields: true,
+	})
+	if err != nil {
+		return nil, err
+	}
+
+	db.AutoMigrate(
+		&User{}, 
+		&Product{}, 
+		&Propertises{},
+	)
+	log.Println(db.Migrator().HasTable(&Product{}))
 	return db, nil
 }
