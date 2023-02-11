@@ -24,4 +24,4 @@ go run main.go
 - Products: Store products information
 - Properties: Store other properties (brand, color, size) of products
 
-![Database models]("https://github.com/vietthangc1/mini-web-golang/blob/main/database-map.png?raw=true")
+![Database models]("https://github.com/vietthangc1/mini-web-golang/blob/main/database-map.png")
