@@ -6,7 +6,7 @@ User Authentication and perform CRUD method on products.
 
 - Framework: Golang ([gin](https://github.com/gin-gonic/gin) framework)
 - Database: Mysql (use [gorm](https://gorm.io/gorm) package to connect)
-- Cache: Redis ([go-redis](https://github.com/redis/go-redis/v9) package)
+- Cache: Redis ([go-redis](https://github.com/redis/go-redis) package)
 - Authentication: [JWT-go](https://github.com/dgrijalva/jwt-go)
 - Crypto: [Bcrypt](https://golang.org/x/crypto/bcrypt)
 
