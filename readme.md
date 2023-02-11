@@ -24,4 +24,4 @@ go run main.go
 - Products: Store products information
 - Properties: Store other properties (brand, color, size) of products
 
-![Database models]("https://www.linkpicture.com/q/database-map.png")
+<img alt="Model Database" src="https://www.linkpicture.com/q/database-map.png">
