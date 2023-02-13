@@ -17,4 +17,4 @@ func NewBaseHandler(db *gorm.DB) *BaseHandler {
 	}
 }
 
-var cacheInstance cache.CacheProducts = cache.CreateCache(os.Getenv("redisHost"), 0, 10 *1000000000) // db 0, expire 10s
+var cacheInstance cache.CacheProducts = cache.CreateCache(os.Getenv("redisHost"), 0, 0.5 *1000000000) // db 0, expire 10s

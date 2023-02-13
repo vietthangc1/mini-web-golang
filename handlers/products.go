@@ -100,15 +100,6 @@ func (h *BaseHandler) HandlerAddProduct(c *gin.Context) {
 		return
 	}
 
-	id := strconv.FormatUint(uint64(newProduct.ID), 10)
-	err = cacheInstance.Set(id, newProduct)
-	if err != nil {
-		log.Println("Cannot update cache")
-		log.Println(err.Error())
-	} else {
-		log.Println("Updated to cache")
-	}
-
 	c.IndentedJSON(http.StatusCreated, newProduct)
 }
 
@@ -133,6 +124,7 @@ func (h *BaseHandler) HandlerUpdateProduct(c *gin.Context) {
 		return
 	}
 	updateProduct.ID = uint(_id)
+	log.Println(updateProduct)
 
 	err = modules.UpdateProduct(h.db, &updateProduct)
 	if err != nil {

@@ -8,7 +8,7 @@ import (
 // ORM models
 
 func GetProductByID (db *gorm.DB, productQuery *models.Product , id uint) (error) {
-	err := db.Preload("Propertises").Where("id = ?", id).First(productQuery).Error
+	err := db.Joins("Propertises", db.Select([]string{"brand","size","color"})).Where("products.id = ?", id).First(productQuery).Error
 
 	if err != nil {
 		return err
@@ -19,12 +19,8 @@ func GetProductByID (db *gorm.DB, productQuery *models.Product , id uint) (error
 func GetProducts(db *gorm.DB, productsQuery *[]models.Product, productFilter, propertisesFilter map[string]interface{}) (error) {
 	// err := db.Preload("Propertises").Where(productFilter).Find(productsQuery).Error
 	err := db.
-		Preload("Propertises").
-		Model(&models.Product{}).
-		Select("*").
-		Joins("left join propertises on products.id = propertises.product_id").
+		Joins("Propertises", db.Where(propertisesFilter)).
 		Where(productFilter).
-		Where(propertisesFilter).
 		Find(productsQuery).Error
 	if err != nil {
 		return err

@@ -13,7 +13,6 @@ import (
 
 func (h *BaseHandler) HandlerAddUser(c *gin.Context) {
 	var loginUser models.User
-
 	if err := c.BindJSON(&loginUser); err != nil {
 		fmt.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"error": err.Error()})
