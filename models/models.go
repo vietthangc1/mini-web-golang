@@ -6,7 +6,7 @@ import (
 
 type Propertises struct {
 	gorm.Model
-	ProductID uint   `json:"product_id"`
+	ProductID uint   `json:"product_id" gorm:"constraint:OnDelete:CASCADE"`
 	Color     string `json:"color"`
 	Brand     string `json:"brand"`
 	Size      string `json:"size"`
@@ -22,7 +22,7 @@ type Product struct {
 	Cate2       string      `json:"cate2"`
 	Cate3       string      `json:"cate3"`
 	Cate4       string      `json:"cate4"`
-	Propertises Propertises `gorm:"foreignKey:ProductID;references:ID;constraint:OnDelete:CASCADE" json:"propertises"`
+	Propertises Propertises `json:"propertises"`
 	UserEmail   string      `gorm:"size:150" json:"user_email"`
 }
 

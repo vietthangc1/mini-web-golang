@@ -46,5 +46,6 @@ func UpdateProduct(db *gorm.DB, updateProduct *models.Product) (error) {
 
 func DeleteProduct(db *gorm.DB, productDelete *models.Product, id uint) (error) {
 	db.Where("id = ?", id).Delete(productDelete)
+	db.Where("product_id = ?", id).Delete(&models.Propertises{})
 	return nil
 }

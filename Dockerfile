@@ -1,12 +1,18 @@
-FROM golang:1.19
+FROM golang:alpine
 
-WORKDIR /
+RUN mkdir /app
 
-# pre-copy/cache go.mod for pre-downloading dependencies and only redownloading them in subsequent builds if they change
-COPY go.mod go.sum ./
-RUN go mod download && go mod verify
+WORKDIR /app
 
-COPY . .
-RUN go build -o /mini-web-golang
+ADD go.mod .
+ADD go.sum .
 
-CMD ["/mini-web-golang"]
+
+RUN go mod download
+RUN go get github.com/githubnemo/CompileDaemon
+
+ADD . .
+
+EXPOSE 8080
+
+ENTRYPOINT CompileDaemon --build="go build main.go" --command=./main
