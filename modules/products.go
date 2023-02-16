@@ -8,7 +8,7 @@ import (
 // ORM models
 
 func GetProductByID (db *gorm.DB, productQuery *models.Product , id uint) (error) {
-	err := db.Joins("Propertises", db.Select([]string{"brand","size","color"})).Where("products.id = ?", id).First(productQuery).Error
+	err := db.Joins("Propertises").Where("products.id = ?", id).First(productQuery).Error
 
 	if err != nil {
 		return err
