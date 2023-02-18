@@ -1,4 +1,4 @@
-package app
+package handlers
 
 import (
 	"log"
@@ -11,7 +11,7 @@ import (
 	"github.com/vietthangc1/mini-web-golang/tokens"
 )
 
-func (a *App) HandlerAddUser(c *gin.Context) {
+func (h *Handler) HandlerAddUser(c *gin.Context) {
 	var loginUser models.User
 	if err := c.BindJSON(&loginUser); err != nil {
 		log.Println(err.Error())
@@ -21,7 +21,7 @@ func (a *App) HandlerAddUser(c *gin.Context) {
 
 	loginUser.Password, _ = modules.HasingPassword(loginUser.Password)
 
-	loginUser, err := a.Handler.UserRepo.AddUser(loginUser)
+	loginUser, err := h.UserRepo.AddUser(loginUser)
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"error": err.Error()})
@@ -30,20 +30,20 @@ func (a *App) HandlerAddUser(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, loginUser)
 }
 
-func (a *App) HandlerDeleteUser(c *gin.Context) {
+func (h *Handler) HandlerDeleteUser(c *gin.Context) {
 	id := c.Param("id")
 	var userDelete models.User
 
 	_id, _ := strconv.ParseUint(id, 10, 32)
 
-	userDelete, err := a.Handler.UserRepo.DeleteUser(uint(_id))
+	userDelete, err := h.UserRepo.DeleteUser(uint(_id))
 	if err != nil {
 		log.Println(err)
 		c.IndentedJSON(http.StatusNotModified, gin.H{"error": err.Error()})
 		return
 	}
 
-	err = a.Handler.CacheInstance.Delete(id)
+	err = h.CacheInstance.Delete(id)
 	if err != nil {
 		log.Println("Cannot delete from cache")
 		log.Println(err)
@@ -51,7 +51,7 @@ func (a *App) HandlerDeleteUser(c *gin.Context) {
 	c.IndentedJSON(http.StatusCreated, gin.H{"user": userDelete, "message": "Deleted!"})
 }
 
-func (a *App) HandlerLogin(c *gin.Context) {
+func (h *Handler) HandlerLogin(c *gin.Context) {
 	var loginUser models.User
 
 	if err := c.BindJSON(&loginUser); err != nil {
@@ -63,7 +63,7 @@ func (a *App) HandlerLogin(c *gin.Context) {
 	email := loginUser.Email
 	password := loginUser.Password
 
-	loginUser, err := a.Handler.UserRepo.GetUserByEmail(email)
+	loginUser, err := h.UserRepo.GetUserByEmail(email)
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
@@ -84,13 +84,13 @@ func (a *App) HandlerLogin(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, gin.H{"token": token})
 }
 
-func (a *App) HandlerGetUser(c *gin.Context) {
+func (h *Handler) HandlerGetUser(c *gin.Context) {
 	var currentUser models.User
 	user_email, err := tokens.ExtractTokenEmail(c)
 	if err != nil {
 		c.IndentedJSON(http.StatusNonAuthoritativeInfo, gin.H{"error": err.Error()})
 	}
-	currentUser, err = a.Handler.UserRepo.GetUserByEmail(user_email)
+	currentUser, err = h.UserRepo.GetUserByEmail(user_email)
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})

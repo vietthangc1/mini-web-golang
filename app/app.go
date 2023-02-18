@@ -14,7 +14,6 @@ import (
 type App struct {
 	Router        *gin.Engine
 	Handler       handlers.Handler
-	CacheInstance cache.CacheProducts
 }
 
 func (a *App) InitializeRoutes() *gin.Engine {
@@ -45,29 +44,44 @@ func NewCacheInstance() cache.CacheProducts {
 	return cache.NewCache(os.Getenv("REDISHOST"), 0, 10*1000000000) // db 0, expire 10s
 }
 
-
-
 func (a *App) Initialize() error {
 	db, err := models.ConnectDatabaseORM()
 	if err != nil {
 		return err
 	}
 
-	a.Handler = handlers.NewHandler(modules.NewProductRepository(db), modules.NewUserRepository(db))
+	a.Handler = handlers.NewHandler(modules.NewProductRepository(db), modules.NewUserRepository(db), NewCacheInstance())
 
 	a.Router = a.InitializeRoutes()
-
-	a.CacheInstance = NewCacheInstance()
 
 	return nil
 }
 
-// wire.go
+// for wire
 
-func NewApp(router *gin.Engine, handler handlers.Handler, cacheInstance cache.CacheProducts) App {
+func NewApp(router *gin.Engine, handler handlers.Handler) App {
 	return App{
 		Router:        router,
 		Handler:       handler,
-		CacheInstance: cacheInstance,
 	}
+}
+
+func NewRouter(h handlers.Handler) *gin.Engine {
+	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
+
+	router.GET("/products", h.HandlerGetProducts)
+	router.GET("/product/:id", h.HandlerGetProductByID)
+	router.POST("/user", h.HandlerAddUser)
+	router.POST("/login", h.HandlerLogin)
+
+	private := router.Group("/")
+	private.Use(middlewares.JwtAuthMiddleware())
+	private.GET("/user", h.HandlerGetUser)
+	private.POST("/product", h.HandlerAddProduct)
+	private.PUT("/product/:id", h.HandlerUpdateProduct)
+	private.DELETE("/product/:id", h.HandlerDeleteProduct)
+	private.DELETE("/user/:id", h.HandlerDeleteUser)
+
+	return router
 }

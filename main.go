@@ -6,7 +6,7 @@ import (
 
 	_ "github.com/go-sql-driver/mysql"
 	"github.com/joho/godotenv"
-	"github.com/vietthangc1/mini-web-golang/app"
+	// "github.com/vietthangc1/mini-web-golang/app"
 )
 
 func main() {
@@ -16,9 +16,17 @@ func main() {
 		panic(err.Error())
 	}
 
-	var _app app.App
+	// dependency not using google wire
+	// var _app app.App
+	// _app.Initialize()
+	// fmt.Printf("Running at http://%s\n", os.Getenv("PORT"))
+	// _app.Run()
 
-	_app.Initialize()
+	// using google wire
+	_app, err := InitializeApp()
+	if err != nil {
+		panic(err.Error())
+	}
 	fmt.Printf("Running at http://%s\n", os.Getenv("PORT"))
-	_app.Run()
+	_app.Router.Run(os.Getenv("PORT"))
 }
