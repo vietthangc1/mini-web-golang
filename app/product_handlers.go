@@ -98,7 +98,7 @@ func (a *App) HandlerAddProduct(c *gin.Context) {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
-	}	
+	}
 
 	c.IndentedJSON(http.StatusCreated, newProduct)
 }
@@ -152,7 +152,7 @@ func (a *App) HandlerDeleteProduct(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
-	
+
 	deleteProduct, err := a.Handler.ProductRepo.DeleteProduct(uint(_id))
 	if err != nil {
 		log.Println(err.Error())

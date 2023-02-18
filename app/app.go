@@ -11,22 +11,22 @@ import (
 	"github.com/vietthangc1/mini-web-golang/modules"
 )
 
-
 type App struct {
-	Router *gin.Engine
-	Handler handlers.Handler
+	Router        *gin.Engine
+	Handler       handlers.Handler
 	CacheInstance cache.CacheProducts
 }
 
 func (a *App) InitializeRoutes() *gin.Engine {
-	a.Router.Use(middlewares.CORSMiddleware())
+	router := gin.Default()
+	router.Use(middlewares.CORSMiddleware())
 
-	a.Router.GET("/products", a.HandlerGetProducts)
-	a.Router.GET("/product/:id", a.HandlerGetProductByID)
-	a.Router.POST("/user", a.HandlerAddUser)
-	a.Router.POST("/login", a.HandlerLogin)
+	router.GET("/products", a.HandlerGetProducts)
+	router.GET("/product/:id", a.HandlerGetProductByID)
+	router.POST("/user", a.HandlerAddUser)
+	router.POST("/login", a.HandlerLogin)
 
-	private := a.Router.Group("/")
+	private := router.Group("/")
 	private.Use(middlewares.JwtAuthMiddleware())
 	private.GET("/user", a.HandlerGetUser)
 	private.POST("/product", a.HandlerAddProduct)
@@ -34,27 +34,40 @@ func (a *App) InitializeRoutes() *gin.Engine {
 	private.DELETE("/product/:id", a.HandlerDeleteProduct)
 	private.DELETE("/user/:id", a.HandlerDeleteUser)
 
-	return nil
+	return router
 }
 
 func (a *App) Run() error {
-    return a.Router.Run(os.Getenv("PORT"))
+	return a.Router.Run(os.Getenv("PORT"))
 }
 
-func (a *App) Initialize() (error) {
+func NewCacheInstance() cache.CacheProducts {
+	return cache.NewCache(os.Getenv("REDISHOST"), 0, 10*1000000000) // db 0, expire 10s
+}
+
+
+
+func (a *App) Initialize() error {
 	db, err := models.ConnectDatabaseORM()
 	if err != nil {
 		return err
 	}
 
-	a.Handler.ProductRepo = *modules.NewProductRepository(db)
-	a.Handler.UserRepo = *modules.NewUserRepository(db)
+	a.Handler = handlers.NewHandler(modules.NewProductRepository(db), modules.NewUserRepository(db))
 
-	a.Router = gin.Default()
-	a.InitializeRoutes()
+	a.Router = a.InitializeRoutes()
 
-	a.CacheInstance = cache.CreateCache(os.Getenv("REDISHOST"), 0, 0.5 *1000000000) // db 0, expire 10s
+	a.CacheInstance = NewCacheInstance()
 
 	return nil
 }
 
+// wire.go
+
+func NewApp(router *gin.Engine, handler handlers.Handler, cacheInstance cache.CacheProducts) App {
+	return App{
+		Router:        router,
+		Handler:       handler,
+		CacheInstance: cacheInstance,
+	}
+}

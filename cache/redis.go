@@ -14,63 +14,63 @@ import (
 var ctx = context.Background()
 
 type CacheInfo struct {
-    Host string
-    DB int
-    Expire time.Duration
+	Host   string
+	DB     int
+	Expire time.Duration
 }
 
-type CacheProducts interface{
-    Set(key string, value models.Product) error
-    Get(key string) (models.Product,error)
-    Delete(key string) error
+type CacheProducts interface {
+	Set(key string, value models.Product) error
+	Get(key string) (models.Product, error)
+	Delete(key string) error
 }
 
-func CreateCache(host string, db int, expireTime time.Duration) (*CacheInfo) {
-    return &CacheInfo{
-        Host: host,
-        DB: db,
-        Expire: expireTime,
-    }
+func NewCache(host string, db int, expireTime time.Duration) *CacheInfo {
+	return &CacheInfo{
+		Host:   host,
+		DB:     db,
+		Expire: expireTime,
+	}
 }
 
-func (c *CacheInfo) getClient() (*redis.Client) {
-    rdb := redis.NewClient(&redis.Options{
-        Addr:     c.Host,
-        Password: "", // no password set
-        DB:       c.DB,  // use default DB
-    })
-    return rdb
+func (c *CacheInfo) getClient() *redis.Client {
+	rdb := redis.NewClient(&redis.Options{
+		Addr:     c.Host,
+		Password: "",   // no password set
+		DB:       c.DB, // use default DB
+	})
+	return rdb
 }
 
-func (c *CacheInfo) Set(key string, value models.Product) (error) {
-    rdb := c.getClient()
+func (c *CacheInfo) Set(key string, value models.Product) error {
+	rdb := c.getClient()
 
-    out, err := json.Marshal(value)
-	if (err != nil) {
+	out, err := json.Marshal(value)
+	if err != nil {
 		return err
 	}
 
-    err = rdb.Set(ctx, key, string(out), c.Expire).Err()
-    if err != nil {
-        return err
-    }
-    return nil
+	err = rdb.Set(ctx, key, string(out), c.Expire).Err()
+	if err != nil {
+		return err
+	}
+	return nil
 }
 
 func (c *CacheInfo) Get(key string) (models.Product, error) {
-    rdb := c.getClient()
-    val, err := rdb.Get(ctx, key).Result()
-    if err != nil {
-        return models.Product{}, err
-    }
-    out := models.Product{}
-    json.Unmarshal([]byte(val), &out)
-    return out, nil
+	rdb := c.getClient()
+	val, err := rdb.Get(ctx, key).Result()
+	if err != nil {
+		return models.Product{}, err
+	}
+	out := models.Product{}
+	json.Unmarshal([]byte(val), &out)
+	return out, nil
 }
 
-func (c *CacheInfo) Delete(key string) (error) {
-    rdb := c.getClient()
-    searchPattern := key
+func (c *CacheInfo) Delete(key string) error {
+	rdb := c.getClient()
+	searchPattern := key
 
 	if len(os.Args) > 1 {
 		searchPattern = os.Args[1]
@@ -88,6 +88,5 @@ func (c *CacheInfo) Delete(key string) (error) {
 		return err
 	}
 	fmt.Printf("Deleted Count %d\n", foundedRecordCount)
-    return nil
+	return nil
 }
-

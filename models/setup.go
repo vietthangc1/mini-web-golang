@@ -24,8 +24,8 @@ func ConnectDatabase() (*sql.DB, error) {
 
 	if err != nil {
 		fmt.Println("Ping Failed!!")
-		return nil,err
-	}		
+		return nil, err
+	}
 	fmt.Println("Successful database connection")
 	return db, nil
 }
@@ -41,8 +41,8 @@ func ConnectDatabaseORM() (*gorm.DB, error) {
 	log.Println("Connect to dtb")
 
 	db.AutoMigrate(
-		&User{}, 
-		&Product{}, 
+		&User{},
+		&Product{},
 		&Propertises{},
 	)
 	log.Println(db.Migrator().HasTable(&Product{}))

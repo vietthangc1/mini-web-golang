@@ -35,7 +35,7 @@ func (a *App) HandlerDeleteUser(c *gin.Context) {
 	var userDelete models.User
 
 	_id, _ := strconv.ParseUint(id, 10, 32)
-	
+
 	userDelete, err := a.Handler.UserRepo.DeleteUser(uint(_id))
 	if err != nil {
 		log.Println(err)
@@ -44,7 +44,7 @@ func (a *App) HandlerDeleteUser(c *gin.Context) {
 	}
 
 	err = a.CacheInstance.Delete(id)
-	if err != nil{
+	if err != nil {
 		log.Println("Cannot delete from cache")
 		log.Println(err)
 	}
@@ -76,7 +76,7 @@ func (a *App) HandlerLogin(c *gin.Context) {
 		return
 	}
 	token, err := tokens.GenerateToken(loginUser.Email)
-	if (err != nil) {
+	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
 		return
@@ -87,7 +87,7 @@ func (a *App) HandlerLogin(c *gin.Context) {
 func (a *App) HandlerGetUser(c *gin.Context) {
 	var currentUser models.User
 	user_email, err := tokens.ExtractTokenEmail(c)
-	if (err != nil) {
+	if err != nil {
 		c.IndentedJSON(http.StatusNonAuthoritativeInfo, gin.H{"error": err.Error()})
 	}
 	currentUser, err = a.Handler.UserRepo.GetUserByEmail(user_email)
