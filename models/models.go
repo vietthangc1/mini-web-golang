@@ -32,3 +32,5 @@ type User struct {
 	Password string    `json:"password"`
 	Products []Product `gorm:"foreignKey:UserEmail;references:Email"`
 }
+
+

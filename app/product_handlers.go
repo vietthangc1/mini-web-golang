@@ -1,4 +1,4 @@
-package handlers
+package app
 
 import (
 	"log"
@@ -11,11 +11,11 @@ import (
 	"github.com/vietthangc1/mini-web-golang/tokens"
 )
 
-func (h *BaseHandler) HandlerGetProductByID(c *gin.Context) {
+func (a *App) HandlerGetProductByID(c *gin.Context) {
 	id := c.Param("id")
 	var productQuery models.Product
 
-	val, err := cacheInstance.Get(id)
+	val, err := a.CacheInstance.Get(id)
 	if err != nil {
 		_id, err := strconv.ParseUint(id, 10, 32)
 		if err != nil {
@@ -23,14 +23,14 @@ func (h *BaseHandler) HandlerGetProductByID(c *gin.Context) {
 			c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 			return
 		}
-		err = modules.GetProductByID(h.db, &productQuery, uint(_id))
+		productQuery, err = a.Handler.ProductRepo.GetProductByID(uint(_id))
 		if err != nil {
 			log.Println(err.Error())
 			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			return
 		}
 
-		err = cacheInstance.Set(id, productQuery)
+		err = a.CacheInstance.Set(id, productQuery)
 		if err != nil {
 			log.Println("Cannot update cache")
 			log.Println(err.Error())
@@ -44,7 +44,7 @@ func (h *BaseHandler) HandlerGetProductByID(c *gin.Context) {
 	c.IndentedJSON(http.StatusFound, productQuery)
 }
 
-func (h *BaseHandler) HandlerGetProducts(c *gin.Context) {
+func (a *App) HandlerGetProducts(c *gin.Context) {
 	var (
 		productsQuery []models.Product
 	)
@@ -70,7 +70,7 @@ func (h *BaseHandler) HandlerGetProducts(c *gin.Context) {
 	log.Println(productFilter)
 	log.Println(propertisesFilter)
 
-	err := modules.GetProducts(h.db, &productsQuery, productFilter, propertisesFilter)
+	productsQuery, err := a.Handler.ProductRepo.GetProducts(productFilter, propertisesFilter)
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})
@@ -79,7 +79,7 @@ func (h *BaseHandler) HandlerGetProducts(c *gin.Context) {
 	c.IndentedJSON(http.StatusFound, productsQuery)
 }
 
-func (h *BaseHandler) HandlerAddProduct(c *gin.Context) {
+func (a *App) HandlerAddProduct(c *gin.Context) {
 	var newProduct models.Product
 	user_email, err := tokens.ExtractTokenEmail(c)
 	if err != nil {
@@ -93,17 +93,17 @@ func (h *BaseHandler) HandlerAddProduct(c *gin.Context) {
 	}
 	newProduct.UserEmail = user_email
 
-	err = modules.AddProduct(h.db, &newProduct)
+	newProduct, err = a.Handler.ProductRepo.AddProduct(newProduct)
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
-	}
+	}	
 
 	c.IndentedJSON(http.StatusCreated, newProduct)
 }
 
-func (h *BaseHandler) HandlerUpdateProduct(c *gin.Context) {
+func (a *App) HandlerUpdateProduct(c *gin.Context) {
 	var updateProduct models.Product
 	user_email, err := tokens.ExtractTokenEmail(c)
 	if err != nil {
@@ -126,14 +126,14 @@ func (h *BaseHandler) HandlerUpdateProduct(c *gin.Context) {
 	updateProduct.ID = uint(_id)
 	log.Println(updateProduct)
 
-	err = modules.UpdateProduct(h.db, &updateProduct)
+	updateProduct, err = a.Handler.ProductRepo.UpdateProduct(updateProduct, uint(_id))
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
 
-	err = cacheInstance.Set(id, updateProduct)
+	err = a.CacheInstance.Set(id, updateProduct)
 	if err != nil {
 		log.Println("Cannot update cache")
 		log.Println(err.Error())
@@ -144,7 +144,7 @@ func (h *BaseHandler) HandlerUpdateProduct(c *gin.Context) {
 	c.IndentedJSON(http.StatusOK, updateProduct)
 }
 
-func (h *BaseHandler) HandlerDeleteProduct(c *gin.Context) {
+func (a *App) HandlerDeleteProduct(c *gin.Context) {
 	id := c.Param("id")
 	_id, err := strconv.ParseUint(id, 10, 32)
 	if err != nil {
@@ -152,20 +152,18 @@ func (h *BaseHandler) HandlerDeleteProduct(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
-
-	var deleteProduct models.Product
-
-	err = modules.DeleteProduct(h.db, &deleteProduct, uint(_id))
+	
+	deleteProduct, err := a.Handler.ProductRepo.DeleteProduct(uint(_id))
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
 
-	err = cacheInstance.Delete(id)
+	err = a.CacheInstance.Delete(id)
 	if err != nil {
 		log.Println("Cannot delete from cache")
 		log.Println(err.Error())
 	}
-	c.IndentedJSON(http.StatusOK, gin.H{"message": "Deleted!"})
+	c.IndentedJSON(http.StatusOK, gin.H{"product": deleteProduct, "message": "Deleted!"})
 }

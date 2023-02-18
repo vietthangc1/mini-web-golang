@@ -12,7 +12,7 @@ import (
 )
 
 func ConnectDatabase() (*sql.DB, error) {
-	db, err := sql.Open("mysql", os.Getenv("mysqlLogin"))
+	db, err := sql.Open("mysql", os.Getenv("MYSQLHOST"))
 	if err != nil {
 		return nil, err
 	}
@@ -31,12 +31,14 @@ func ConnectDatabase() (*sql.DB, error) {
 }
 
 func ConnectDatabaseORM() (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.Open(os.Getenv("mysqlLogin")), &gorm.Config{
+	db, err := gorm.Open(mysql.Open(os.Getenv("MYSQLHOST")), &gorm.Config{
 		QueryFields: true,
 	})
 	if err != nil {
 		return nil, err
 	}
+
+	log.Println("Connect to dtb")
 
 	db.AutoMigrate(
 		&User{}, 
