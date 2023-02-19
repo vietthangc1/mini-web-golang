@@ -16,6 +16,8 @@ type App struct {
 	Handler       handlers.Handler
 }
 
+// for dependency injection not using google wire
+
 func (a *App) InitializeRoutes() *gin.Engine {
 	router := gin.Default()
 	router.Use(middlewares.CORSMiddleware())
@@ -40,9 +42,6 @@ func (a *App) Run() error {
 	return a.Router.Run(os.Getenv("PORT"))
 }
 
-func NewCacheInstance() cache.CacheProducts {
-	return cache.NewCache(os.Getenv("REDISHOST"), 0, 10*1000000000) // db 0, expire 10s
-}
 
 func (a *App) Initialize() error {
 	db, err := models.ConnectDatabaseORM()
@@ -50,7 +49,7 @@ func (a *App) Initialize() error {
 		return err
 	}
 
-	a.Handler = handlers.NewHandler(modules.NewProductRepository(db), modules.NewUserRepository(db), NewCacheInstance())
+	a.Handler = handlers.NewHandler(modules.NewProductRepository(db), modules.NewUserRepository(db), cache.NewCacheInstance())
 
 	a.Router = a.InitializeRoutes()
 

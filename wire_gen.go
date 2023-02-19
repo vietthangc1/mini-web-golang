@@ -8,6 +8,7 @@ package main
 
 import (
 	"github.com/vietthangc1/mini-web-golang/app"
+	"github.com/vietthangc1/mini-web-golang/cache"
 	"github.com/vietthangc1/mini-web-golang/handlers"
 	"github.com/vietthangc1/mini-web-golang/models"
 	"github.com/vietthangc1/mini-web-golang/modules"
@@ -26,7 +27,7 @@ func InitializeApp() (app.App, error) {
 	}
 	productRepository := modules.NewProductRepository(db)
 	userRepository := modules.NewUserRepository(db)
-	cacheProducts := app.NewCacheInstance()
+	cacheProducts := cache.NewCacheInstance()
 	handler := handlers.NewHandler(productRepository, userRepository, cacheProducts)
 	engine := app.NewRouter(handler)
 	appApp := app.NewApp(engine, handler)

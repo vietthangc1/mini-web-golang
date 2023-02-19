@@ -33,6 +33,10 @@ func NewCache(host string, db int, expireTime time.Duration) *CacheInfo {
 	}
 }
 
+func NewCacheInstance() CacheProducts {
+	return NewCache(os.Getenv("REDISHOST"), 0, 10*1000000000) // db 0, expire 10s
+}
+
 func (c *CacheInfo) getClient() *redis.Client {
 	rdb := redis.NewClient(&redis.Options{
 		Addr:     c.Host,

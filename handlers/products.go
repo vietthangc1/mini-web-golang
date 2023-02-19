@@ -153,7 +153,7 @@ func (h *Handler) HandlerDeleteProduct(c *gin.Context) {
 		return
 	}
 
-	deleteProduct, err := h.ProductRepo.DeleteProduct(uint(_id))
+	_, err = h.ProductRepo.DeleteProduct(uint(_id))
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
@@ -165,5 +165,5 @@ func (h *Handler) HandlerDeleteProduct(c *gin.Context) {
 		log.Println("Cannot delete from cache")
 		log.Println(err.Error())
 	}
-	c.IndentedJSON(http.StatusOK, gin.H{"product": deleteProduct, "message": "Deleted!"})
+	c.IndentedJSON(http.StatusOK, gin.H{"message": "Deleted!"})
 }
