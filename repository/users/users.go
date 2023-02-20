@@ -1,18 +1,17 @@
-package modules
+package users
 
 import (
 	"github.com/vietthangc1/mini-web-golang/models"
+	"github.com/vietthangc1/mini-web-golang/repository"
 	"gorm.io/gorm"
 )
 
-type UserRepository struct{
+type UserRepository struct {
 	db *gorm.DB
 }
 
-func NewUserRepository(db *gorm.DB) UserRepository {
-	return UserRepository{
-		db: db,
-	}
+func NewUserService(db *gorm.DB) repository.UserService {
+	return &UserRepository{db: db}
 }
 
 func (r *UserRepository) AddUser(newUser models.User) (models.User, error) {
@@ -29,7 +28,7 @@ func (r *UserRepository) DeleteUser(id uint) (models.User, error) {
 	return userDelete, nil
 }
 
-func (r *UserRepository) GetUserByEmail (email string) (models.User, error) {
+func (r *UserRepository) GetUserByEmail(email string) (models.User, error) {
 	var userQuery models.User
 	err := r.db.Preload("Products.Propertises").Where("email = ?", email).First(&userQuery).Error
 

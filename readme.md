@@ -9,6 +9,7 @@ User Authentication and perform CRUD method on products.
 - Cache: Redis ([go-redis](https://github.com/redis/go-redis) package)
 - Authentication: [JWT-go](https://github.com/dgrijalva/jwt-go)
 - Crypto: [Bcrypt](https://golang.org/x/crypto/bcrypt)
+- Wire: [google/wwire](https://github.com/google/wire)
 
 ## Running
 

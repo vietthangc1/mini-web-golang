@@ -1,24 +1,20 @@
-package modules
+package products
 
 import (
-
 	"github.com/vietthangc1/mini-web-golang/models"
+	"github.com/vietthangc1/mini-web-golang/repository"
 	"gorm.io/gorm"
 )
 
-// ORM models
-
-type ProductRepository struct{
+type ProductRepository struct {
 	db *gorm.DB
 }
 
-func NewProductRepository(db *gorm.DB) ProductRepository {
-	return ProductRepository{
-		db: db,
-	}
+func NewProductService(db *gorm.DB) repository.ProductService {
+	return &ProductRepository{db: db}
 }
 
-func (r *ProductRepository) GetProductByID (id uint) (models.Product, error) {
+func (r *ProductRepository) GetProductByID(id uint) (models.Product, error) {
 	var productQuery models.Product
 	err := r.db.Joins("Propertises").Where("products.id = ?", id).First(&productQuery).Error
 

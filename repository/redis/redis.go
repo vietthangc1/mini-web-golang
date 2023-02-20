@@ -1,4 +1,4 @@
-package cache
+package redis
 
 import (
 	"context"
@@ -9,6 +9,7 @@ import (
 
 	"github.com/redis/go-redis/v9"
 	"github.com/vietthangc1/mini-web-golang/models"
+	"github.com/vietthangc1/mini-web-golang/repository"
 )
 
 var ctx = context.Background()
@@ -19,12 +20,6 @@ type CacheInfo struct {
 	Expire time.Duration
 }
 
-type CacheProducts interface {
-	Set(key string, value models.Product) error
-	Get(key string) (models.Product, error)
-	Delete(key string) error
-}
-
 func NewCache(host string, db int, expireTime time.Duration) *CacheInfo {
 	return &CacheInfo{
 		Host:   host,
@@ -33,7 +28,7 @@ func NewCache(host string, db int, expireTime time.Duration) *CacheInfo {
 	}
 }
 
-func NewCacheInstance() CacheProducts {
+func NewCacheInstance() repository.CacheProducts {
 	return NewCache(os.Getenv("REDISHOST"), 0, 10*1000000000) // db 0, expire 10s
 }
 

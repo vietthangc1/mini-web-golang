@@ -1,3 +1,4 @@
+//go:build wireinject
 //+build wireinject
 
 package main
@@ -5,10 +6,11 @@ package main
 // import (
 // 	"github.com/google/wire"
 // 	"github.com/vietthangc1/mini-web-golang/app"
-// 	"github.com/vietthangc1/mini-web-golang/cache"
 // 	"github.com/vietthangc1/mini-web-golang/handlers"
 // 	"github.com/vietthangc1/mini-web-golang/models"
-// 	"github.com/vietthangc1/mini-web-golang/modules"
+// 	"github.com/vietthangc1/mini-web-golang/repository/products"
+// 	"github.com/vietthangc1/mini-web-golang/repository/redis"
+// 	"github.com/vietthangc1/mini-web-golang/repository/users"
 // )
 
 // func InitializeApp() (app.App, error) {
@@ -16,10 +18,10 @@ package main
 // 		app.NewApp,
 // 		app.NewRouter,
 // 		handlers.NewHandler,
-// 		modules.NewProductRepository,
-// 		modules.NewUserRepository,
+// 		products.NewProductService,
+// 		users.NewUserService,
 // 		models.ConnectDatabaseORM,
-// 		cache.NewCacheInstance,
+// 		redis.NewCacheInstance,
 // 	)
 // 	return app.App{}, nil
 // }

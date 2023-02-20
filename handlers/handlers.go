@@ -1,20 +1,19 @@
 package handlers
 
 import (
-	"github.com/vietthangc1/mini-web-golang/cache"
-	"github.com/vietthangc1/mini-web-golang/modules"
+	"github.com/vietthangc1/mini-web-golang/repository"
 )
 
 type Handler struct {
-	ProductRepo   modules.ProductRepository
-	UserRepo      modules.UserRepository
-	CacheInstance cache.CacheProducts
+	ProductRepo   repository.ProductService
+	UserRepo      repository.UserService
+	CacheInstance repository.CacheProducts
 }
 
-func NewHandler(productRepo modules.ProductRepository, userRepo modules.UserRepository, cacheInstance cache.CacheProducts) Handler {
+func NewHandler(productServ repository.ProductService, userServ repository.UserService, cacheInstance repository.CacheProducts) Handler {
 	return Handler{
-		ProductRepo:   productRepo,
-		UserRepo:      userRepo,
+		ProductRepo:   productServ,
+		UserRepo:      userServ,
 		CacheInstance: cacheInstance,
 	}
 }
