@@ -6,15 +6,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type ProductRepository struct {
+type ProductRepoImpl struct {
 	db *gorm.DB
 }
 
-func NewProductService(db *gorm.DB) repository.ProductService {
-	return &ProductRepository{db: db}
+func NewProductRepo(db *gorm.DB) repository.ProductRepo {
+	return &ProductRepoImpl{db: db}
 }
 
-func (r *ProductRepository) GetProductByID(id uint) (models.Product, error) {
+func (r *ProductRepoImpl) GetProductByID(id uint) (models.Product, error) {
 	var productQuery models.Product
 	err := r.db.Joins("Propertises").Where("products.id = ?", id).First(&productQuery).Error
 
@@ -24,7 +24,7 @@ func (r *ProductRepository) GetProductByID(id uint) (models.Product, error) {
 	return productQuery, nil
 }
 
-func (r *ProductRepository) GetProducts(productFilter, propertisesFilter map[string]interface{}) ([]models.Product, error) {
+func (r *ProductRepoImpl) GetProducts(productFilter, propertisesFilter map[string]interface{}) ([]models.Product, error) {
 	var productsQuery []models.Product
 	err := r.db.
 		Joins("Propertises", r.db.Where(propertisesFilter)).
@@ -36,7 +36,7 @@ func (r *ProductRepository) GetProducts(productFilter, propertisesFilter map[str
 	return productsQuery, nil
 }
 
-func (r *ProductRepository) AddProduct(newProduct models.Product) (models.Product, error) {
+func (r *ProductRepoImpl) AddProduct(newProduct models.Product) (models.Product, error) {
 	err := r.db.Create(&newProduct).Error
 	if err != nil {
 		return models.Product{}, err
@@ -44,7 +44,7 @@ func (r *ProductRepository) AddProduct(newProduct models.Product) (models.Produc
 	return newProduct, nil
 }
 
-func (r *ProductRepository) UpdateProduct(updateProduct models.Product, id uint) (models.Product, error) {
+func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint) (models.Product, error) {
 	err := r.db.Model(&models.Product{}).Where("id = ?", id).Updates(updateProduct).Error
 	if err != nil {
 		return models.Product{}, err
@@ -56,7 +56,7 @@ func (r *ProductRepository) UpdateProduct(updateProduct models.Product, id uint)
 	return updateProduct, nil
 }
 
-func (r *ProductRepository) DeleteProduct(id uint) (models.Product, error) {
+func (r *ProductRepoImpl) DeleteProduct(id uint) (models.Product, error) {
 	var productDelete models.Product
 	r.db.Where("id = ?", id).Delete(&productDelete)
 	r.db.Where("product_id = ?", id).Delete(&models.Propertises{})

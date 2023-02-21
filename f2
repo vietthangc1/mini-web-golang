@@ -1,19 +1,12 @@
-func NewRouter(h handlers.Handler) *gin.Engine {
-	router := gin.Default()
-	router.Use(middlewares.CORSMiddleware())
+// fix update
+// foreign key là gì
 
-	router.GET("/products", h.HandlerGetProducts)
-	router.GET("/product/:id", h.HandlerGetProductByID)
-	router.POST("/user", h.HandlerAddUser)
-	router.POST("/login", h.HandlerLogin)
+// hướng đối tượng, hướng chức năng, các tính chất, nguyên tắc
 
-	private := router.Group("/")
-	private.Use(middlewares.JwtAuthMiddleware())
-	private.GET("/user", h.HandlerGetUser)
-	private.POST("/product", h.HandlerAddProduct)
-	private.PUT("/product/:id", h.HandlerUpdateProduct)
-	private.DELETE("/product/:id", h.HandlerDeleteProduct)
-	private.DELETE("/user/:id", h.HandlerDeleteUser)
+// author vs authen
 
-	return router
-}
+// validate api
+// protobuf, grpc
+// github (command git) forward, fast forward, revert, reset, merge, rebase
+
+// propertises with varied fields

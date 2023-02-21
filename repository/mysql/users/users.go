@@ -6,15 +6,15 @@ import (
 	"gorm.io/gorm"
 )
 
-type UserRepository struct {
+type UserRepoImpl struct {
 	db *gorm.DB
 }
 
-func NewUserService(db *gorm.DB) repository.UserService {
-	return &UserRepository{db: db}
+func NewUserRepo(db *gorm.DB) repository.UserRepo {
+	return &UserRepoImpl{db: db}
 }
 
-func (r *UserRepository) AddUser(newUser models.User) (models.User, error) {
+func (r *UserRepoImpl) AddUser(newUser models.User) (models.User, error) {
 	err := r.db.Create(&newUser).Error
 	if err != nil {
 		return models.User{}, err
@@ -22,13 +22,13 @@ func (r *UserRepository) AddUser(newUser models.User) (models.User, error) {
 	return newUser, nil
 }
 
-func (r *UserRepository) DeleteUser(id uint) (models.User, error) {
+func (r *UserRepoImpl) DeleteUser(id uint) (models.User, error) {
 	var userDelete models.User
 	r.db.Where("id = ?", id).Delete(&userDelete)
 	return userDelete, nil
 }
 
-func (r *UserRepository) GetUserByEmail(email string) (models.User, error) {
+func (r *UserRepoImpl) GetUserByEmail(email string) (models.User, error) {
 	var userQuery models.User
 	err := r.db.Preload("Products.Propertises").Where("email = ?", email).First(&userQuery).Error
 

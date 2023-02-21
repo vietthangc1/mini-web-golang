@@ -11,6 +11,7 @@ type Propertises struct {
 	Brand     string `json:"brand"`
 	Size      string `json:"size"`
 }
+
 type Product struct {
 	gorm.Model
 	SKU         string      `gorm:"size:150" json:"sku"`

@@ -5,12 +5,12 @@ import (
 )
 
 type Handler struct {
-	ProductRepo   repository.ProductService
-	UserRepo      repository.UserService
+	ProductRepo   repository.ProductRepo
+	UserRepo      repository.UserRepo
 	CacheInstance repository.CacheProducts
 }
 
-func NewHandler(productServ repository.ProductService, userServ repository.UserService, cacheInstance repository.CacheProducts) Handler {
+func NewHandler(productServ repository.ProductRepo, userServ repository.UserRepo, cacheInstance repository.CacheProducts) Handler {
 	return Handler{
 		ProductRepo:   productServ,
 		UserRepo:      userServ,
