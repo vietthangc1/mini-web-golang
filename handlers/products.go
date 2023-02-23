@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/vietthangc1/mini-web-golang/models"
-	"github.com/vietthangc1/mini-web-golang/repository"
 	"github.com/vietthangc1/mini-web-golang/tokens"
+	"github.com/vietthangc1/mini-web-golang/utils"
 )
 
 func (h *Handler) HandlerGetProductByID(c *gin.Context) {
@@ -54,7 +54,7 @@ func (h *Handler) HandlerGetProducts(c *gin.Context) {
 	arrayProductFilter := []string{"cate1", "cate2", "cate3", "cate4"}
 	productFilter := make(map[string]interface{})
 	for k, v := range filter {
-		if repository.Contains(arrayProductFilter, k) {
+		if utils.Contains(arrayProductFilter, k) {
 			productFilter[k] = v
 		}
 	}
@@ -62,7 +62,7 @@ func (h *Handler) HandlerGetProducts(c *gin.Context) {
 	arrayPropertisesFilter := []string{"color", "brand", "size"}
 	propertisesFilter := make(map[string]interface{})
 	for k, v := range filter {
-		if repository.Contains(arrayPropertisesFilter, k) {
+		if utils.Contains(arrayPropertisesFilter, k) {
 			propertisesFilter[k] = v
 		}
 	}

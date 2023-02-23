@@ -7,8 +7,8 @@ import (
 
 	"github.com/gin-gonic/gin"
 	"github.com/vietthangc1/mini-web-golang/models"
-	"github.com/vietthangc1/mini-web-golang/repository"
 	"github.com/vietthangc1/mini-web-golang/tokens"
+	"github.com/vietthangc1/mini-web-golang/utils"
 )
 
 func (h *Handler) HandlerAddUser(c *gin.Context) {
@@ -19,7 +19,7 @@ func (h *Handler) HandlerAddUser(c *gin.Context) {
 		return
 	}
 
-	loginUser.Password, _ = repository.HasingPassword(loginUser.Password)
+	loginUser.Password, _ = utils.HasingPassword(loginUser.Password)
 
 	loginUser, err := h.UserRepo.AddUser(loginUser)
 	if err != nil {
@@ -69,7 +69,7 @@ func (h *Handler) HandlerLogin(c *gin.Context) {
 		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
-	check := repository.ComparePassword(password, loginUser.Password)
+	check := utils.ComparePassword(password, loginUser.Password)
 	if !check {
 		log.Println("Wrong Email or Password")
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": "Wrong Email or Password"})
