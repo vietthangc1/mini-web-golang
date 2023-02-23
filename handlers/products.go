@@ -8,7 +8,6 @@ import (
 	"github.com/gin-gonic/gin"
 	"github.com/vietthangc1/mini-web-golang/models"
 	"github.com/vietthangc1/mini-web-golang/tokens"
-	"github.com/vietthangc1/mini-web-golang/utils"
 )
 
 func (h *Handler) HandlerGetProductByID(c *gin.Context) {
@@ -51,26 +50,7 @@ func (h *Handler) HandlerGetProducts(c *gin.Context) {
 
 	filter := c.Request.URL.Query()
 
-	arrayProductFilter := []string{"cate1", "cate2", "cate3", "cate4"}
-	productFilter := make(map[string]interface{})
-	for k, v := range filter {
-		if utils.Contains(arrayProductFilter, k) {
-			productFilter[k] = v
-		}
-	}
-
-	arrayPropertisesFilter := []string{"color", "brand", "size"}
-	propertisesFilter := make(map[string]interface{})
-	for k, v := range filter {
-		if utils.Contains(arrayPropertisesFilter, k) {
-			propertisesFilter[k] = v
-		}
-	}
-
-	log.Println(productFilter)
-	log.Println(propertisesFilter)
-
-	productsQuery, err := h.ProductRepo.GetProducts(productFilter, propertisesFilter)
+	productsQuery, err := h.ProductRepo.GetProducts(filter)
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusBadRequest, gin.H{"message": err.Error()})

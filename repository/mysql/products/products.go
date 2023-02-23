@@ -2,9 +2,11 @@ package products
 
 import (
 	"log"
+	"net/url"
 
 	"github.com/vietthangc1/mini-web-golang/models"
 	"github.com/vietthangc1/mini-web-golang/repository"
+	"github.com/vietthangc1/mini-web-golang/utils"
 	"gorm.io/gorm"
 )
 
@@ -26,7 +28,24 @@ func (r *ProductRepoImpl) GetProductByID(id uint) (models.Product, error) {
 	return productQuery, nil
 }
 
-func (r *ProductRepoImpl) GetProducts(productFilter, propertisesFilter map[string]interface{}) ([]models.Product, error) {
+func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, error) {
+	
+	arrayProductFilter := []string{"cate1", "cate2", "cate3", "cate4"}
+	productFilter := make(map[string]interface{})
+	for k, v := range filter {
+		if utils.Contains(arrayProductFilter, k) {
+			productFilter[k] = v
+		}
+	}
+
+	arrayPropertisesFilter := []string{"color", "brand", "size"}
+	propertisesFilter := make(map[string]interface{})
+	for k, v := range filter {
+		if utils.Contains(arrayPropertisesFilter, k) {
+			propertisesFilter[k] = v
+		}
+	}
+	
 	var productsQuery []models.Product
 	err := r.db.
 		Joins("Propertises", r.db.Where(propertisesFilter)).
