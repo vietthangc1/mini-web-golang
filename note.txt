@@ -1,9 +1,9 @@
-// fix update
-// foreign key là gì
+// fix update   done
+// foreign key là gì    done
 
 // hướng đối tượng, hướng chức năng, các tính chất, nguyên tắc
 
-// author vs authen
+// author vs authen   done (chưa fix http code)
 
 // validate api
 // protobuf, grpc

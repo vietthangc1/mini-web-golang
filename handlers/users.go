@@ -66,7 +66,7 @@ func (h *Handler) HandlerLogin(c *gin.Context) {
 	loginUser, err := h.UserRepo.GetUserByEmail(email)
 	if err != nil {
 		log.Println(err.Error())
-		c.IndentedJSON(http.StatusBadRequest, gin.H{"error": err.Error()})
+		c.IndentedJSON(http.StatusUnauthorized, gin.H{"error": err.Error()})
 		return
 	}
 	check := repository.ComparePassword(password, loginUser.Password)

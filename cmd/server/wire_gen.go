@@ -9,7 +9,7 @@ package main
 import (
 	"github.com/vietthangc1/mini-web-golang/app"
 	"github.com/vietthangc1/mini-web-golang/handlers"
-	"github.com/vietthangc1/mini-web-golang/models"
+	"github.com/vietthangc1/mini-web-golang/repository/mysql/db"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/products"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/users"
 	"github.com/vietthangc1/mini-web-golang/repository/redis"
@@ -22,12 +22,12 @@ import (
 // Injectors from wire.go:
 
 func InitializeApp() (app.App, error) {
-	db, err := models.ConnectDatabaseORM()
+	gormDB, err := db.ConnectDatabaseORM()
 	if err != nil {
 		return app.App{}, err
 	}
-	productRepo := products.NewProductRepo(db)
-	userRepo := users.NewUserRepo(db)
+	productRepo := products.NewProductRepo(gormDB)
+	userRepo := users.NewUserRepo(gormDB)
 	cacheProducts := redis.NewCacheInstance()
 	handler := handlers.NewHandler(productRepo, userRepo, cacheProducts)
 	engine := app.NewRouter(handler)

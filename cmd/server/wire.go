@@ -7,10 +7,10 @@ import (
 	"github.com/google/wire"
 	"github.com/vietthangc1/mini-web-golang/app"
 	"github.com/vietthangc1/mini-web-golang/handlers"
-	"github.com/vietthangc1/mini-web-golang/models"
+	"github.com/vietthangc1/mini-web-golang/repository/mysql/db"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/products"
-	"github.com/vietthangc1/mini-web-golang/repository/redis"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/users"
+	"github.com/vietthangc1/mini-web-golang/repository/redis"
 )
 
 func InitializeApp() (app.App, error) {
@@ -20,7 +20,7 @@ func InitializeApp() (app.App, error) {
 		handlers.NewHandler,
 		products.NewProductRepo,
 		users.NewUserRepo,
-		models.ConnectDatabaseORM,
+		db.ConnectDatabaseORM,
 		redis.NewCacheInstance,
 	)
 	return app.App{}, nil

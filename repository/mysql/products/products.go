@@ -1,6 +1,8 @@
 package products
 
 import (
+	"log"
+
 	"github.com/vietthangc1/mini-web-golang/models"
 	"github.com/vietthangc1/mini-web-golang/repository"
 	"gorm.io/gorm"
@@ -49,6 +51,7 @@ func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint) (
 	if err != nil {
 		return models.Product{}, err
 	}
+	log.Println(updateProduct.Propertises)
 	err = r.db.Model(&models.Propertises{}).Where("product_id = ?", id).Updates(updateProduct.Propertises).Error
 	if err != nil {
 		return models.Product{}, err

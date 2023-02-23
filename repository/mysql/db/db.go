@@ -1,9 +1,10 @@
-package models
+package db
 
 import (
 	"log"
 	"os"
 
+	"github.com/vietthangc1/mini-web-golang/models"
 	"gorm.io/driver/mysql"
 	"gorm.io/gorm"
 )
@@ -19,10 +20,9 @@ func ConnectDatabaseORM() (*gorm.DB, error) {
 	log.Println("Connect to dtb")
 
 	db.AutoMigrate(
-		&User{},
-		&Product{},
-		&Propertises{},
+		&models.User{},
+		&models.Product{},
+		&models.Propertises{},
 	)
-	log.Println(db.Migrator().HasTable(&Product{}))
 	return db, nil
 }

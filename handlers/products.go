@@ -107,7 +107,7 @@ func (h *Handler) HandlerUpdateProduct(c *gin.Context) {
 	var updateProduct models.Product
 	user_email, err := tokens.ExtractTokenEmail(c)
 	if err != nil {
-		c.IndentedJSON(http.StatusNonAuthoritativeInfo, gin.H{"error": err.Error()})
+		c.IndentedJSON(401, gin.H{"error": err.Error()})
 	}
 
 	id := c.Param("id")
@@ -133,7 +133,14 @@ func (h *Handler) HandlerUpdateProduct(c *gin.Context) {
 		return
 	}
 
-	err = h.CacheInstance.Set(id, updateProduct)
+	productQuery, err := h.ProductRepo.GetProductByID(uint(_id))
+		if err != nil {
+			log.Println(err.Error())
+			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+			return
+		}
+
+	err = h.CacheInstance.Set(id, productQuery)
 	if err != nil {
 		log.Println("Cannot update cache")
 		log.Println(err.Error())
@@ -141,7 +148,7 @@ func (h *Handler) HandlerUpdateProduct(c *gin.Context) {
 		log.Println("Updated to cache")
 	}
 
-	c.IndentedJSON(http.StatusOK, updateProduct)
+	c.IndentedJSON(http.StatusOK, productQuery)
 }
 
 func (h *Handler) HandlerDeleteProduct(c *gin.Context) {
