@@ -20,7 +20,7 @@ func NewProductRepo(db *gorm.DB) repository.ProductRepo {
 
 func (r *ProductRepoImpl) GetProductByID(id uint) (models.Product, error) {
 	var productQuery models.Product
-	err := r.db.Joins("Propertises").Where("products.id = ?", id).First(&productQuery).Error
+	err := r.db.Preload("Propertises").Where("products.id = ?", id).First(&productQuery).Error
 
 	if err != nil {
 		return models.Product{}, err
