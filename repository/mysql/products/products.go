@@ -48,8 +48,9 @@ func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, erro
 	
 	var productsQuery []models.Product
 	err := r.db.
-		Joins("Propertises", r.db.Where(propertisesFilter)).
-		Where(productFilter).
+		Preload("Propertises").
+		// Joins("Propertises", r.db.Where(propertisesFilter)).
+		// Where(productFilter).
 		Find(&productsQuery).Error
 	if err != nil {
 		return []models.Product{}, err
