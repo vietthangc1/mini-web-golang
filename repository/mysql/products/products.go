@@ -32,26 +32,48 @@ func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, erro
 	
 	arrayProductFilter := []string{"cate1", "cate2", "cate3", "cate4"}
 	productFilter := make(map[string]interface{})
+	propertisesFilter := make(map[string]interface{})
 	for k, v := range filter {
 		if utils.Contains(arrayProductFilter, k) {
 			productFilter[k] = v
-		}
-	}
-
-	arrayPropertisesFilter := []string{"color", "brand", "size"}
-	propertisesFilter := make(map[string]interface{})
-	for k, v := range filter {
-		if utils.Contains(arrayPropertisesFilter, k) {
+		} else {
 			propertisesFilter[k] = v
 		}
 	}
+
+	log.Println(productFilter)
+	log.Println(propertisesFilter)
 	
+	var lst_id []uint
+	q := r.db.
+		Distinct("products.id").
+		Table("products").
+		Joins("inner join propertises on products.id = propertises.product_id")
+
+	// filter on propertises
+	for key, element := range propertisesFilter {
+		q = q.Where("propertises.Attribute = ? AND propertises.Value = ?", key, element)
+	}	
+	// filter on products
+	q = q.Where(productFilter)
+	_ = q.Find(&lst_id)
+	log.Println(lst_id)
+
+	// _q := r.db.
+	// 	Distinct("products.id").
+	// 	Table("products")
+	// for key, element := range propertisesFilter {
+	// 	_q = _q.Where("exist(?)", )
+	// 	_q = _q.Where("propertises.Attribute = ? AND propertises.Value = ?", key, element)
+	// }	
+
 	var productsQuery []models.Product
-	err := r.db.
+	query := r.db.
 		Preload("Propertises").
-		// Joins("Propertises", r.db.Where(propertisesFilter)).
-		// Where(productFilter).
-		Find(&productsQuery).Error
+		Where("id in ?", lst_id)
+
+	err := query.Find(&productsQuery).Error
+
 	if err != nil {
 		return []models.Product{}, err
 	}
@@ -69,9 +91,10 @@ func (r *ProductRepoImpl) AddProduct(newProduct models.Product) (models.Product,
 func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint) (models.Product, error) {
 	err := r.db.Model(&models.Product{}).Where("id = ?", id).Updates(updateProduct).Error
 	if err != nil {
+		log.Println(err)
 		return models.Product{}, err
 	}
-	log.Println(updateProduct.Propertises)
+
 	err = r.db.Model(&models.Propertises{}).Where("product_id = ?", id).Updates(updateProduct.Propertises).Error
 	if err != nil {
 		return models.Product{}, err

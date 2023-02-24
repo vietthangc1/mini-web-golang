@@ -6,7 +6,7 @@ import (
 
 type Propertises struct {
 	gorm.Model
-	ProductID uint   `json:"product_id" gorm:"constraint:OnDelete:CASCADE"`
+	ProductID uint   `json:"product_id" gorm:"constraint:OnDelete:CASCADE;OnDelete:CASCADE"`
 	Attribute string `json:"attribute"`
 	Value     string `json:"value"`
 }
