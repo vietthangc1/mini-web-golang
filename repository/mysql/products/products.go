@@ -20,7 +20,7 @@ func NewProductRepo(db *gorm.DB) repository.ProductRepo {
 
 func (r *ProductRepoImpl) GetProductByID(id uint) (models.Product, error) {
 	var productQuery models.Product
-	err := r.db.Joins("Propertises").Where("products.id = ?", id).First(&productQuery).Error
+	err := r.db.Preload("Propertises").Where("products.id = ?", id).First(&productQuery).Error
 
 	if err != nil {
 		return models.Product{}, err
@@ -32,25 +32,48 @@ func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, erro
 	
 	arrayProductFilter := []string{"cate1", "cate2", "cate3", "cate4"}
 	productFilter := make(map[string]interface{})
+	propertisesFilter := make(map[string]interface{})
 	for k, v := range filter {
 		if utils.Contains(arrayProductFilter, k) {
 			productFilter[k] = v
-		}
-	}
-
-	arrayPropertisesFilter := []string{"color", "brand", "size"}
-	propertisesFilter := make(map[string]interface{})
-	for k, v := range filter {
-		if utils.Contains(arrayPropertisesFilter, k) {
+		} else {
 			propertisesFilter[k] = v
 		}
 	}
+
+	log.Println(productFilter)
+	log.Println(propertisesFilter)
 	
+	var lst_id []uint
+	q := r.db.
+		Distinct("products.id").
+		Table("products").
+		Joins("inner join propertises on products.id = propertises.product_id")
+
+	// filter on propertises
+	for key, element := range propertisesFilter {
+		q = q.Where("propertises.Attribute = ? AND propertises.Value = ?", key, element)
+	}	
+	// filter on products
+	q = q.Where(productFilter)
+	_ = q.Find(&lst_id)
+	log.Println(lst_id)
+
+	// _q := r.db.
+	// 	Distinct("products.id").
+	// 	Table("products")
+	// for key, element := range propertisesFilter {
+	// 	_q = _q.Where("exist(?)", )
+	// 	_q = _q.Where("propertises.Attribute = ? AND propertises.Value = ?", key, element)
+	// }	
+
 	var productsQuery []models.Product
-	err := r.db.
-		Joins("Propertises", r.db.Where(propertisesFilter)).
-		Where(productFilter).
-		Find(&productsQuery).Error
+	query := r.db.
+		Preload("Propertises").
+		Where("id in ?", lst_id)
+
+	err := query.Find(&productsQuery).Error
+
 	if err != nil {
 		return []models.Product{}, err
 	}
@@ -68,13 +91,19 @@ func (r *ProductRepoImpl) AddProduct(newProduct models.Product) (models.Product,
 func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint) (models.Product, error) {
 	err := r.db.Model(&models.Product{}).Where("id = ?", id).Updates(updateProduct).Error
 	if err != nil {
+		log.Println(err)
 		return models.Product{}, err
 	}
-	log.Println(updateProduct.Propertises)
-	err = r.db.Model(&models.Propertises{}).Where("product_id = ?", id).Updates(updateProduct.Propertises).Error
+
+	if updateProduct.Propertises == nil {
+		return updateProduct, nil
+	}
+
+	err = r.UpdatePropertises(updateProduct.Propertises, id)
 	if err != nil {
 		return models.Product{}, err
 	}
+
 	return updateProduct, nil
 }
 
@@ -83,4 +112,41 @@ func (r *ProductRepoImpl) DeleteProduct(id uint) (models.Product, error) {
 	r.db.Where("id = ?", id).Delete(&productDelete)
 	r.db.Where("product_id = ?", id).Delete(&models.Propertises{})
 	return productDelete, nil
+}
+
+
+func (r *ProductRepoImpl) UpdatePropertises(propertisesFilter []models.Propertises, product_id uint) error {
+	// Validate propertises
+
+	var currentPropertises []string
+	r.db.Table("propertises").Distinct("attribute").Where("product_id = ?", product_id).Find(&currentPropertises)
+	log.Println(currentPropertises)
+
+	// Update propertises by product id and attribute
+	for _, filter := range propertisesFilter {
+
+		// Check propertises hiện tại có attribute update k, có thì update
+		if utils.Contains(currentPropertises, filter.Attribute) {
+			q := r.db.Table("propertises").
+			Where("product_id = ? and attribute = ?", product_id, filter.Attribute).
+			Update("Value", filter.Value)
+
+			err := q.Error
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+
+			continue
+		} 
+		
+		// Không thì thêm mới
+		filter.ProductID = product_id
+		err := r.db.Create(&filter).Error
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	return nil
 }
