@@ -9,4 +9,4 @@
 // protobuf, grpc
 // github (command git) forward, fast forward, revert, reset, merge, rebase
 
-// propertises with varied fields
+// propertises with varied fields done (use EAV model)
