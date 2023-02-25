@@ -95,10 +95,15 @@ func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint) (
 		return models.Product{}, err
 	}
 
-	err = r.db.Model(&models.Propertises{}).Where("product_id = ?", id).Updates(updateProduct.Propertises).Error
+	if updateProduct.Propertises == nil {
+		return updateProduct, nil
+	}
+
+	err = r.UpdatePropertises(updateProduct.Propertises, id)
 	if err != nil {
 		return models.Product{}, err
 	}
+
 	return updateProduct, nil
 }
 
@@ -107,4 +112,41 @@ func (r *ProductRepoImpl) DeleteProduct(id uint) (models.Product, error) {
 	r.db.Where("id = ?", id).Delete(&productDelete)
 	r.db.Where("product_id = ?", id).Delete(&models.Propertises{})
 	return productDelete, nil
+}
+
+
+func (r *ProductRepoImpl) UpdatePropertises(propertisesFilter []models.Propertises, product_id uint) error {
+	// Validate propertises
+
+	var currentPropertises []string
+	r.db.Table("propertises").Distinct("attribute").Where("product_id = ?", product_id).Find(&currentPropertises)
+	log.Println(currentPropertises)
+
+	// Update propertises by product id and attribute
+	for _, filter := range propertisesFilter {
+
+		// Check propertises hiện tại có attribute update k, có thì update
+		if utils.Contains(currentPropertises, filter.Attribute) {
+			q := r.db.Table("propertises").
+			Where("product_id = ? and attribute = ?", product_id, filter.Attribute).
+			Update("Value", filter.Value)
+
+			err := q.Error
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+
+			continue
+		} 
+		
+		// Không thì thêm mới
+		filter.ProductID = product_id
+		err := r.db.Create(&filter).Error
+		if err != nil {
+			log.Println(err)
+			return err
+		}
+	}
+	return nil
 }
