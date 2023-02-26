@@ -7,16 +7,16 @@ import (
 type Propertises struct {
 	gorm.Model
 	ProductID uint   `json:"product_id" gorm:"constraint:OnDelete:CASCADE;OnDelete:CASCADE"`
-	Attribute string `json:"attribute"`
-	Value     string `json:"value"`
+	Attribute string `gorm:"not null" json:"attribute"`
+	Value     string `gorm:"not null" json:"value"`
 }
 
 type Product struct {
 	gorm.Model
-	SKU         string        `gorm:"size:150" json:"sku"`
-	Name        string        `gorm:"size:150" json:"name"`
-	Price       float64       `json:"price"`
-	Number      int64         `json:"number"`
+	SKU         string        `gorm:"not null;size:150;check:sku <> ''" json:"sku"`
+	Name        string        `gorm:"not null;size:150;check:name <> ''" json:"name"`
+	Price       float64       `gorm:"not null;check:price > 0" json:"price"`
+	Number      int64         `gorm:"not null;check:number > 0" json:"number"`
 	Description string        `json:"description"`
 	Cate1       string        `json:"cate1"`
 	Cate2       string        `json:"cate2"`
@@ -29,6 +29,6 @@ type Product struct {
 type User struct {
 	gorm.Model
 	Email    string    `gorm:"unique;size:150" json:"email"`
-	Password string    `json:"password"`
+	Password string    `gorm:"check:password <> '';not null" json:"password"`
 	Products []Product `gorm:"foreignKey:UserEmail;references:Email"`
 }

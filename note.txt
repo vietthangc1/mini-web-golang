@@ -5,7 +5,7 @@
 
 // author vs authen   done (chưa fix http code)
 
-// validate api
+// validate api done
 // protobuf, grpc
 // github (command git) forward, fast forward, revert, reset, merge, rebase
 

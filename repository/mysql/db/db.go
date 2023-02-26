@@ -19,6 +19,8 @@ func ConnectDatabaseORM() (*gorm.DB, error) {
 
 	log.Println("Connect to dtb")
 
+	db.Migrator().CreateConstraint(&models.Product{}, "Price > 0")
+
 	db.AutoMigrate(
 		&models.User{},
 		&models.Product{},
