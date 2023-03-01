@@ -1,6 +1,7 @@
 package handlers
 
 import (
+	"encoding/json"
 	"log"
 	"net/http"
 	"strconv"
@@ -87,6 +88,7 @@ func (h *Handler) HandlerUpdateProduct(c *gin.Context) {
 	var updateProduct models.Product
 	user_email, err := tokens.ExtractTokenEmail(c)
 	if err != nil {
+		
 		c.IndentedJSON(401, gin.H{"error": err.Error()})
 	}
 
@@ -103,10 +105,16 @@ func (h *Handler) HandlerUpdateProduct(c *gin.Context) {
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
 		return
 	}
-	updateProduct.ID = uint(_id)
-	log.Println(updateProduct)
 
-	updateProduct, err = h.ProductRepo.UpdateProduct(updateProduct, uint(_id))
+	oldRecord, err := h.ProductRepo.GetProductByID(uint(_id))
+	if err != nil {
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
+	updateProduct.ID = uint(_id)
+
+	updateProduct, err = h.ProductRepo.UpdateProduct(updateProduct, uint(_id), user_email)
 	if err != nil {
 		log.Println(err.Error())
 		c.IndentedJSON(http.StatusNotModified, gin.H{"message": err.Error()})
@@ -114,11 +122,31 @@ func (h *Handler) HandlerUpdateProduct(c *gin.Context) {
 	}
 
 	productQuery, err := h.ProductRepo.GetProductByID(uint(_id))
+	if err != nil {
+		log.Println(err.Error())
+		c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
+		return
+	}
+
+	oldRecordJSON, _ := json.Marshal(oldRecord)
+	newRecordJSON, _ := json.Marshal(productQuery)
+
+	if string(oldRecordJSON) != string(newRecordJSON) {
+		newLog := models.Log{
+			UserEmail: user_email,
+			Table: "Products",
+			EntityID: _id,
+			OldValue: string(oldRecordJSON),
+			NewValue: string(newRecordJSON),
+		}
+		
+		_, err = h.LogRepo.AddLog(newLog)
 		if err != nil {
 			log.Println(err.Error())
 			c.IndentedJSON(http.StatusNotFound, gin.H{"message": err.Error()})
 			return
 		}
+	}
 
 	err = h.CacheInstance.Set(id, productQuery)
 	if err != nil {

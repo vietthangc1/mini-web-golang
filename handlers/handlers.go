@@ -7,13 +7,19 @@ import (
 type Handler struct {
 	ProductRepo   repository.ProductRepo
 	UserRepo      repository.UserRepo
+	LogRepo       repository.LogRepo
 	CacheInstance repository.CacheProducts
 }
 
-func NewHandler(productServ repository.ProductRepo, userServ repository.UserRepo, cacheInstance repository.CacheProducts) Handler {
+func NewHandler(
+	productServ repository.ProductRepo,
+	userServ repository.UserRepo,
+	logServ repository.LogRepo,
+	cacheInstance repository.CacheProducts) Handler {
 	return Handler{
 		ProductRepo:   productServ,
 		UserRepo:      userServ,
+		LogRepo:       logServ,
 		CacheInstance: cacheInstance,
 	}
 }

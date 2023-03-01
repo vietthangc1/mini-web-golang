@@ -1,6 +1,7 @@
 package products
 
 import (
+	"encoding/json"
 	"log"
 	"net/url"
 
@@ -29,7 +30,7 @@ func (r *ProductRepoImpl) GetProductByID(id uint) (models.Product, error) {
 }
 
 func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, error) {
-	
+
 	arrayProductFilter := []string{"cate1", "cate2", "cate3", "cate4"}
 	productFilter := make(map[string]interface{})
 	propertisesFilter := make(map[string]interface{})
@@ -43,7 +44,7 @@ func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, erro
 
 	log.Println(productFilter)
 	log.Println(propertisesFilter)
-	
+
 	var lst_id []uint
 	q := r.db.
 		Distinct("products.id").
@@ -53,7 +54,7 @@ func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, erro
 	// filter on propertises
 	for key, element := range propertisesFilter {
 		q = q.Where("propertises.Attribute = ? AND propertises.Value = ?", key, element)
-	}	
+	}
 	// filter on products
 	q = q.Where(productFilter)
 	_ = q.Find(&lst_id)
@@ -65,7 +66,7 @@ func (r *ProductRepoImpl) GetProducts(filter url.Values) ([]models.Product, erro
 	// for key, element := range propertisesFilter {
 	// 	_q = _q.Where("exist(?)", )
 	// 	_q = _q.Where("propertises.Attribute = ? AND propertises.Value = ?", key, element)
-	// }	
+	// }
 
 	var productsQuery []models.Product
 	query := r.db.
@@ -88,7 +89,7 @@ func (r *ProductRepoImpl) AddProduct(newProduct models.Product) (models.Product,
 	return newProduct, nil
 }
 
-func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint) (models.Product, error) {
+func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint, user_email string) (models.Product, error) {
 	err := r.db.Model(&models.Product{}).Where("id = ?", id).Updates(updateProduct).Error
 	if err != nil {
 		log.Println(err)
@@ -99,7 +100,7 @@ func (r *ProductRepoImpl) UpdateProduct(updateProduct models.Product, id uint) (
 		return updateProduct, nil
 	}
 
-	err = r.UpdatePropertises(updateProduct.Propertises, id)
+	err = r.UpdatePropertises(updateProduct.Propertises, id, user_email)
 	if err != nil {
 		return models.Product{}, err
 	}
@@ -114,8 +115,7 @@ func (r *ProductRepoImpl) DeleteProduct(id uint) (models.Product, error) {
 	return productDelete, nil
 }
 
-
-func (r *ProductRepoImpl) UpdatePropertises(propertisesFilter []models.Propertises, product_id uint) error {
+func (r *ProductRepoImpl) UpdatePropertises(propertisesFilter []models.Propertises, product_id uint, user_email string) error {
 	// Validate propertises
 
 	var currentPropertises []string
@@ -127,19 +127,51 @@ func (r *ProductRepoImpl) UpdatePropertises(propertisesFilter []models.Propertis
 
 		// Check propertises hiện tại có attribute update k, có thì update
 		if utils.Contains(currentPropertises, filter.Attribute) {
-			q := r.db.Table("propertises").
-			Where("product_id = ? and attribute = ?", product_id, filter.Attribute).
-			Update("Value", filter.Value)
-
-			err := q.Error
+			var oldRecord models.Propertises
+			err := r.db.Table("propertises").
+				Where("product_id = ? and attribute = ?", product_id, filter.Attribute).Find(&oldRecord).Error
 			if err != nil {
 				log.Println(err)
 				return err
 			}
 
+			err = r.db.Table("propertises").
+				Where("product_id = ? and attribute = ?", product_id, filter.Attribute).
+				Update("Value", filter.Value).Error
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+
+			var newRecord models.Propertises
+			err = r.db.Table("propertises").
+				Where("product_id = ? and attribute = ?", product_id, filter.Attribute).Find(&newRecord).Error
+			if err != nil {
+				log.Println(err)
+				return err
+			}
+
+			if oldRecord.Value != newRecord.Value {
+				oldRecordJSON, _ := json.Marshal(oldRecord)
+				newRecordJSON, _ := json.Marshal(newRecord)
+	
+				newLog := models.Log{
+					UserEmail: user_email,
+					Table: "Propertises",
+					EntityID: uint64(oldRecord.ID),
+					OldValue: string(oldRecordJSON),
+					NewValue: string(newRecordJSON),
+				}
+	
+				if err = r.db.Create(&newLog).Error; err != nil {
+					log.Println(err)
+					return err
+				}
+			}
+
 			continue
-		} 
-		
+		}
+
 		// Không thì thêm mới
 		filter.ProductID = product_id
 		err := r.db.Create(&filter).Error

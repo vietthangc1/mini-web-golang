@@ -10,6 +10,6 @@ type ProductRepo interface {
 	GetProductByID(id uint) (models.Product, error)
 	GetProducts(filter url.Values) ([]models.Product, error)
 	AddProduct(newProduct models.Product) (models.Product, error)
-	UpdateProduct(updateProduct models.Product, id uint) (models.Product, error)
+	UpdateProduct(updateProduct models.Product, id uint, user_email string) (models.Product, error)
 	DeleteProduct(id uint) (models.Product, error)
 }

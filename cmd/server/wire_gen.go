@@ -10,6 +10,7 @@ import (
 	"github.com/vietthangc1/mini-web-golang/app"
 	"github.com/vietthangc1/mini-web-golang/handlers"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/db"
+	"github.com/vietthangc1/mini-web-golang/repository/mysql/logs"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/products"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/users"
 	"github.com/vietthangc1/mini-web-golang/repository/redis"
@@ -28,8 +29,9 @@ func InitializeApp() (app.App, error) {
 	}
 	productRepo := products.NewProductRepo(gormDB)
 	userRepo := users.NewUserRepo(gormDB)
+	logRepo := logs.NewLogRepo(gormDB)
 	cacheProducts := redis.NewCacheInstance()
-	handler := handlers.NewHandler(productRepo, userRepo, cacheProducts)
+	handler := handlers.NewHandler(productRepo, userRepo, logRepo, cacheProducts)
 	engine := app.NewRouter(handler)
 	appApp := app.NewApp(engine, handler)
 	return appApp, nil

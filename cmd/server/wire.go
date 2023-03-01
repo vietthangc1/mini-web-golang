@@ -10,6 +10,7 @@ import (
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/db"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/products"
 	"github.com/vietthangc1/mini-web-golang/repository/mysql/users"
+	"github.com/vietthangc1/mini-web-golang/repository/mysql/logs"
 	"github.com/vietthangc1/mini-web-golang/repository/redis"
 )
 
@@ -20,6 +21,7 @@ func InitializeApp() (app.App, error) {
 		handlers.NewHandler,
 		products.NewProductRepo,
 		users.NewUserRepo,
+		logs.NewLogRepo,
 		db.ConnectDatabaseORM,
 		redis.NewCacheInstance,
 	)

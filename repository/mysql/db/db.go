@@ -25,6 +25,7 @@ func ConnectDatabaseORM() (*gorm.DB, error) {
 		&models.User{},
 		&models.Product{},
 		&models.Propertises{},
+		&models.Log{},
 	)
 	return db, nil
 }

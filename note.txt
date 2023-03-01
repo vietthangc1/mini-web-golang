@@ -19,11 +19,11 @@ merge, rebase
 ---- 
 // mysql block (data type)
 // attribute type khác
-// vẽ lại table
+// vẽ lại table  done
 
 // Cách thức viết artthitec styles (sao browser k sup http2)
 forward, fast forward, 
-// log lại update (người thay đổi)
+// log lại update (người thay đổi) done
 // CI/CD
 // Docker Kuberneties
 // mini cube
