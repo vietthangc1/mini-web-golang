@@ -9,7 +9,7 @@ User Authentication and perform CRUD method on products.
 - Cache: Redis ([go-redis](https://github.com/redis/go-redis) package)
 - Authentication: [JWT-go](https://github.com/dgrijalva/jwt-go)
 - Crypto: [Bcrypt](https://golang.org/x/crypto/bcrypt)
-- Wire: [google/wwire](https://github.com/google/wire)
+- Wire: [google/wire](https://github.com/google/wire)
 
 ## Running
 
@@ -23,9 +23,9 @@ go run main.go
 
 - Users: Store Email and Password of users
 - Products: Store products information
-- Properties: Store other properties (brand, color, size) of products
+- Properties: Store other properties of products. The properties name stored in `attribute` column, while the value of correspond attribute stored in `value` column
 
-<img alt="Model Database" src="https://www.linkpicture.com/q/database-map.png">
+<img alt="Model Database" src="https://www.linkpicture.com/q/Screenshot-2023-03-01-at-10.18.22-AM.png">
 
 ## Routes
 
