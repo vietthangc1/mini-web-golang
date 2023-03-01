@@ -6,7 +6,24 @@
 // author vs authen   done (chưa fix http code)
 
 // validate api done
+
 // protobuf, grpc
-// github (command git) forward, fast forward, revert, reset, merge, rebase
+// github (command git) 
+forward, fast forward, 
+
+revert, reset, 
+merge, rebase
 
 // propertises with varied fields done (use EAV model)
+
+---- 
+// mysql block (data type)
+// attribute type khác
+// vẽ lại table
+
+// Cách thức viết artthitec styles (sao browser k sup http2)
+forward, fast forward, 
+// log lại update (người thay đổi)
+// CI/CD
+// Docker Kuberneties
+// mini cube
