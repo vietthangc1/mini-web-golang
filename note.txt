@@ -17,8 +17,7 @@ merge, rebase
 // propertises with varied fields done (use EAV model)
 
 ---- 
-// mysql block (data type)
-// attribute type khác
+// mysql blob (data type) attribute type khác
 // vẽ lại table  done
 
 // Cách thức viết artthitec styles (sao browser k sup http2)

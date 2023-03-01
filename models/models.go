@@ -44,23 +44,3 @@ type Log struct {
 	NewValue  string
 	Timestamp time.Time `gorm:"autoUpdateTime"`
 }
-
-func (p *Product) BeforeUpdate(db *gorm.DB) error {
-	// var oldRecord Product
-
-	// db.Model(Product{}).Where("id = ?", p.ID).First(&oldRecord)
-
-	// oldRecordJSON, _ := json.Marshal(oldRecord)
-	// newRecordJSON, _ := json.Marshal(p)
-
-	// log := Log{
-	// 	Table: db.Statement.Table,
-	// 	EntityID: uint(db.Statement.ReflectValue.FieldByName("ID").Uint()),
-	// 	OldValue: string(oldRecordJSON),
-	// 	NewValue: string(newRecordJSON),
-	// }
-	// if err := db.Create(&log).Error; err != nil {
-	// 	return err
-	// }
-	return nil
-}
