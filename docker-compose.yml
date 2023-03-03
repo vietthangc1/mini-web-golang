@@ -1,0 +1,24 @@
+services:
+  app:
+    image: golang:1.18-alpine
+    ports:
+      - 8080:8080
+    working_dir: /app
+    volumes:
+      - ./:/app
+    environment:
+      MYSQL_HOST: mysql
+      MYSQL_USER: root
+      MYSQL_PASSWORD: Chaugn@rs2
+      MYSQL_DB: mini_golang_project_docker
+
+  mysql:
+    image: mysql:8.0
+    volumes:
+      - mini-project-mysql-data:/var/lib/mysql
+    environment:
+      MYSQL_ROOT_PASSWORD: Chaugn@rs2
+      MYSQL_DATABASE: mini_golang_project_docker
+
+volumes:
+  mini-project-mysql-data:

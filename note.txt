@@ -26,3 +26,8 @@ forward, fast forward,
 // CI/CD
 // Docker Kuberneties
 // mini cube
+
+
+// xem lại makefile
+// grpc gateway
+
