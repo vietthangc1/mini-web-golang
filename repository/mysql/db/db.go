@@ -1,6 +1,7 @@
 package db
 
 import (
+	"fmt"
 	"log"
 	"os"
 
@@ -10,7 +11,14 @@ import (
 )
 
 func ConnectDatabaseORM() (*gorm.DB, error) {
-	db, err := gorm.Open(mysql.Open(os.Getenv("MYSQLHOST")), &gorm.Config{
+	uri := fmt.Sprintf("%s:%s@tcp(%s)/%s?charset=utf8&parseTime=True&loc=Local",
+		os.Getenv("MYSQL_USER"),
+		os.Getenv("MYSQL_PASSWORD"),
+		os.Getenv("MYSQL_HOST"),
+		os.Getenv("MYSQL_DB"),
+	)
+
+	db, err := gorm.Open(mysql.Open(uri), &gorm.Config{
 		QueryFields: true,
 	})
 	if err != nil {
