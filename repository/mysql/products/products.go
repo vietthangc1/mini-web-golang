@@ -135,7 +135,7 @@ func (r *ProductRepoImpl) UpdatePropertises(propertisesFilter []models.Propertis
 				return err
 			}
 
-			err = r.db.Table("propertises").
+			err = r.db.Model(&models.Propertises{}).
 				Where("product_id = ? and attribute = ?", product_id, filter.Attribute).
 				Update("Value", filter.Value).Error
 			if err != nil {
@@ -157,7 +157,7 @@ func (r *ProductRepoImpl) UpdatePropertises(propertisesFilter []models.Propertis
 	
 				newLog := models.Log{
 					UserEmail: user_email,
-					Table: "Propertises",
+					TableModel: "Propertises",
 					EntityID: uint64(oldRecord.ID),
 					OldValue: string(oldRecordJSON),
 					NewValue: string(newRecordJSON),

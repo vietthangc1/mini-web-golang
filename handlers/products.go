@@ -134,7 +134,7 @@ func (h *Handler) HandlerUpdateProduct(c *gin.Context) {
 	if string(oldRecordJSON) != string(newRecordJSON) {
 		newLog := models.Log{
 			UserEmail: user_email,
-			Table: "Products",
+			TableModel: "Products",
 			EntityID: _id,
 			OldValue: string(oldRecordJSON),
 			NewValue: string(newRecordJSON),
