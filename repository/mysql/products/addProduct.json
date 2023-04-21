@@ -1,0 +1,26 @@
+{
+    "sku": "3242",
+    "name": "Iphone 11",
+    "price": 12000000,
+    "number": 10,
+    "description": "Mô tả nè",
+    "cate1": "Phones",
+    "cate2": "IPhone",
+    "cate3": "High",
+    "cate4": "",
+    "propertises": [
+        {
+            "attribute": "color",
+            "value": "red"
+        },
+        {
+            "attribute": "RAM",
+            "value": "4 GB"
+        },
+        {
+            "attribute": "CPU",
+            "value": "Apple A13"
+        }
+    ],
+    "user_email": "example@gmail.com"
+}
