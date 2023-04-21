@@ -5,8 +5,6 @@ services:
     ports:
       - 8080:8080
     working_dir: /app
-    volumes:
-      - ./:/app
     depends_on:
       - mysql
     environment:
@@ -14,14 +12,31 @@ services:
       MYSQL_USER: root
       MYSQL_PASSWORD: secret
       MYSQL_DB: mini_golang_project_v2
+      MYSQL_DB_TEST: mini_golang_project_v2_test
+      MIGRATE_DIR: migrations/mysql
+      TOKEN_HOUR_LIFESPAN: 1
+      API_SECRET: youaremydestiny
+      PORT: 127.0.0.1:8080
 
   mysql:
     image: mysql:8.0
+    ports:
+      - 3360:3360
     volumes:
       - mini-project-mysql-data:/var/lib/mysql
     environment:
       MYSQL_ROOT_PASSWORD: secret
       MYSQL_DATABASE: mini_golang_project_v2
+  
+  redis:
+    image: redis
+    ports:
+      - 6379:6379
+    volumes:
+      - mini-project-redis-data:/var/lib/redis
 
 volumes:
   mini-project-mysql-data:
+    driver: local
+  mini-project-redis-data:
+    driver: local
