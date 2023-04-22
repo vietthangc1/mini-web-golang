@@ -9,13 +9,13 @@ pipeline {
 
     stage('Build Img') {
       steps {
-            sh 'sudo docker build -t ${REPO}/${IMAGE} .'
+            sh 'docker build -t ${REPO}/${IMAGE} .'
         }
     }
 
     stage('Upload Img') {
     steps {
-            sh 'sudo docker push ${REPO}/${IMAGE}'
+            sh 'docker push ${REPO}/${IMAGE}'
       }
     }
 
