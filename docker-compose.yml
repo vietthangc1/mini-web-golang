@@ -22,7 +22,7 @@ services:
     build: .
     restart: always
     ports:
-      - 8080:8080
+      - 3000:3000
     working_dir: /app
     depends_on:
       - db
@@ -36,7 +36,7 @@ services:
       MIGRATE_DIR: migrations/mysql
       TOKEN_HOUR_LIFESPAN: 1
       API_SECRET: youaremydestiny
-      PORT: :8080
+      PORT: :3000
 
 volumes:
   mini-project-mysql-data:

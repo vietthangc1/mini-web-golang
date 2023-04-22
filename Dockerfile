@@ -13,7 +13,7 @@ COPY . .
 RUN go build ./cmd/server
 
 # Expose port 8080
-EXPOSE 8080
+EXPOSE 3000
 
 # Set the entrypoint to run the Golang application
 CMD ["go", "run", "./cmd/server"]
