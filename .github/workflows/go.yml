@@ -25,7 +25,7 @@ jobs:
       run: go build -v ./cmd/server
     
     - name: Lint test
-      run: golangci-lint run
+      uses: golangci/golangci-lint-action@v3
 
     - name: Test
       run: go test -v ./...
