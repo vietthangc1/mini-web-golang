@@ -9,7 +9,7 @@ pipeline {
 
     stage('Build Img') {
       steps {
-        withDockerRegistry(credentialsId: 'c77fa9f5-ab60-4075-8870-bbb1c1b26a3f') {
+        withDockerRegistry(credentialsId: '10a409e9-eb12-4f6c-833b-4ad8c17abc3d', url: 'https://index.docker.io/v1/') {
             sh label: '', script: 'docker build -t ${REPO}/${IMAGE} .'
         }
       }
@@ -17,7 +17,7 @@ pipeline {
 
     stage('Upload Img') {
     steps {
-        withDockerRegistry(credentialsId: 'c77fa9f5-ab60-4075-8870-bbb1c1b26a3f') {
+        withDockerRegistry(credentialsId: '10a409e9-eb12-4f6c-833b-4ad8c17abc3d', url: 'https://index.docker.io/v1/') {
             sh label: '', script: 'docker push ${REPO}/${IMAGE}'
         }
       }
