@@ -1,27 +1,6 @@
 version: '3'
 services:
-  app:
-    image: vietthangc1/mini_golang_project
-    build: .
-    restart: always
-    ports:
-      - 8080:8080
-    working_dir: /app
-    depends_on:
-      - mysql
-    environment:
-      REDISHOST: redis
-      MYSQL_HOST: mysql
-      MYSQL_USER: root
-      MYSQL_PASSWORD: secret
-      MYSQL_DB: mini_golang_project_v2
-      MYSQL_DB_TEST: mini_golang_project_v2_test
-      MIGRATE_DIR: migrations/mysql
-      TOKEN_HOUR_LIFESPAN: 1
-      API_SECRET: youaremydestiny
-      PORT: 127.0.0.1:8080
-
-  mysql:
+  db:
     image: mysql:8.0
     ports:
       - 3360:3360
@@ -37,6 +16,27 @@ services:
       - 6379:6379
     volumes:
       - mini-project-redis-data:/var/lib/redis
+
+  app:
+    image: vietthangc1/mini_golang_project
+    build: .
+    restart: always
+    ports:
+      - 8080:8080
+    working_dir: /app
+    depends_on:
+      - db
+    environment:
+      REDISHOST: redis
+      MYSQL_HOST: db
+      MYSQL_USER: root
+      MYSQL_PASSWORD: secret
+      MYSQL_DB: mini_golang_project_v2
+      MYSQL_DB_TEST: mini_golang_project_v2_test
+      MIGRATE_DIR: migrations/mysql
+      TOKEN_HOUR_LIFESPAN: 1
+      API_SECRET: youaremydestiny
+      PORT: :8080
 
 volumes:
   mini-project-mysql-data:
