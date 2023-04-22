@@ -63,7 +63,10 @@ func (c *CacheInfo) Get(key string) (models.Product, error) {
 		return models.Product{}, err
 	}
 	out := models.Product{}
-	json.Unmarshal([]byte(val), &out)
+	err = json.Unmarshal([]byte(val), &out)
+	if err != nil {
+		return models.Product{}, err
+	}
 	return out, nil
 }
 
