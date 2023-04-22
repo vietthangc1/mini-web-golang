@@ -27,6 +27,5 @@ func Contains(s []string, str string) bool {
 			return true
 		}
 	}
-
 	return false
 }
