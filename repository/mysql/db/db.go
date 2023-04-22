@@ -27,13 +27,20 @@ func ConnectDatabaseORM() (*gorm.DB, error) {
 
 	log.Println("Connect to dtb")
 
-	db.Migrator().CreateConstraint(&models.Product{}, "Price > 0")
+	err = db.Migrator().CreateConstraint(&models.Product{}, "Price > 0")
+	if err != nil {
+		return nil, err
+	}
 
-	db.AutoMigrate(
+	err = db.AutoMigrate(
 		&models.User{},
 		&models.Product{},
 		&models.Propertises{},
 		&models.Log{},
 	)
+	if err != nil {
+		return nil, err
+	}
+	
 	return db, nil
 }

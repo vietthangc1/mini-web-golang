@@ -21,5 +21,8 @@ func main() {
 		panic(err.Error())
 	}
 	fmt.Printf("Running at http://%s\n", os.Getenv("PORT"))
-	_app.Router.Run(os.Getenv("PORT"))
+	err = _app.Router.Run(os.Getenv("PORT"))
+	if err != nil {
+		panic(err.Error())
+	}
 }

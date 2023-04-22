@@ -21,7 +21,8 @@ func TestAddProduct(t *testing.T) {
 	defer jsonFile.Close()
 
 	byteValue, _ := ioutil.ReadAll(jsonFile)
-	json.Unmarshal(byteValue, &product)
+	err = json.Unmarshal(byteValue, &product)
+	art.Nil(err, "error in unmarshalling")
 
 	dbTest, err := db.ConnectDatabaseORMTest(true)
 	art.Nil(err, "error in connecting database")
