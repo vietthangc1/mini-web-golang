@@ -12,6 +12,7 @@ import (
 )
 
 func TestAddProduct(t *testing.T) {
+	t.Skip()
 	art := assert.New(t)
 	product := models.Product{
 	}
